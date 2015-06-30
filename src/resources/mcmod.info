@@ -1,0 +1,16 @@
+[
+{
+  "modid": "commanditem",
+  "name": "Command Item",
+  "description": "Adds a configurable command item.",
+  "version": "0.1",
+  "mcversion": "1.8",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["stewbasic"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
