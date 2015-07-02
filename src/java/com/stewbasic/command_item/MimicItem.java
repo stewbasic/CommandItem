@@ -50,6 +50,9 @@ public class MimicItem extends Item {
 	 */
 	// @formatter:on
 
+	private final static String TAG = "mimicItem", ID = "id", META = "meta",
+			PROCESSED = "proc", PROCESSED_COMBINED = "procl";
+
 	private static class MimicKey {
 		String id;
 		int metadata;
@@ -87,8 +90,6 @@ public class MimicItem extends Item {
 	// hack it apart with reflection >_>.
 	private Field locationsField = null;
 	private String processedTag = null;
-	private final static String TAG = "mimicItem", ID = "id", META = "meta",
-			PROCESSED = "proc", PROCESSED_COMBINED = "procl";
 	private Map<MimicKey, Integer> keyToMeta = null;
 	private int lastMeta, reservedMeta;
 	private Side side;

@@ -2,12 +2,23 @@ package com.stewbasic.command_item;
 
 import java.util.List;
 
+import com.google.gson.JsonParseException;
+
+import net.minecraft.command.CommandResultStats.Type;
+import net.minecraft.command.ICommandManager;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants.NBT;
 
 /**
  * Note that this item is not added to any creative inventory tab, and can only
@@ -50,10 +61,102 @@ public class CommandRune extends MimicItem {
 		nbt.setTag(CMD, cmds);
 	}
 
+	private static class CommandSender implements ICommandSender {
+		IChatComponent name;
+		EntityPlayer player;
+		World world;
+
+		CommandSender(ItemStack stack, EntityPlayer player, World world) {
+			NBTTagCompound nbt = stack.getSubCompound(DISP, false);
+			if (nbt != null && nbt.hasKey(NAME, NBT.TAG_STRING)) {
+				try {
+					name = IChatComponent.Serializer
+							.jsonToComponent(CommandRune.name);
+					name = IChatComponent.Serializer.jsonToComponent(nbt
+							.getString(NAME));
+				} catch (JsonParseException e) {
+				}
+			}
+			this.player = player;
+			this.world = world;
+		}
+
+		@Override
+		public String getName() {
+			return name.getUnformattedText();
+		}
+
+		@Override
+		public IChatComponent getDisplayName() {
+			return name;
+		}
+
+		@Override
+		public void addChatMessage(IChatComponent message) {
+		}
+
+		@Override
+		public boolean canUseCommand(int permLevel, String commandName) {
+			return permLevel <= 2;
+		}
+
+		@Override
+		public BlockPos getPosition() {
+			return player.getPosition();
+		}
+
+		@Override
+		public Vec3 getPositionVector() {
+			return player.getPositionVector();
+		}
+
+		@Override
+		public World getEntityWorld() {
+			return world;
+		}
+
+		@Override
+		public Entity getCommandSenderEntity() {
+			return player;
+		}
+
+		@Override
+		public boolean sendCommandFeedback() {
+			return false;
+		}
+
+		@Override
+		public void setCommandStat(Type type, int amount) {
+		}
+	}
+
+	/**
+	 * Based on
+	 * {@link net.minecraft.command.server.CommandBlockLogic#trigger(World)}.
+	 */
 	@Override
-	public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn,
-			EntityPlayer playerIn) {
-		// TODO
-		return itemStackIn;
+	public ItemStack onItemRightClick(ItemStack stack, World world,
+			EntityPlayer player) {
+		if (!world.isRemote) {
+			MinecraftServer minecraftserver = MinecraftServer.getServer();
+			if (minecraftserver != null) {
+				ICommandManager icommandmanager = minecraftserver
+						.getCommandManager();
+				NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+				NBTTagList cmds = nbt.getTagList(CMD, NBT.TAG_STRING);
+				try {
+					for (int i = 0; i < cmds.tagCount(); ++i) {
+						String cmd = cmds.getStringTagAt(i);
+						icommandmanager.executeCommand(new CommandSender(stack,
+								player, world), cmd);
+					}
+				} catch (Exception e) {
+					if (CommandItemMod.DEBUG) {
+						System.out.println(e);
+					}
+				}
+			}
+		}
+		return stack;
 	}
 }

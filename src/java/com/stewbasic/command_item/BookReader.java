@@ -63,6 +63,10 @@ public class BookReader {
 	 * TODO: Can't get formatted text on dedicated server. Can we keep in JSON?
 	 * Have option to return unformatted?
 	 * 
+	 * TODO: If begins with \", unescape 
+	 * 
+	 * Based on {@link net.minecraft.client.gui.GuiScreenBook#drawScreen(int,int,float)}.
+	 * 
 	 * @param stack
 	 *            An ItemStack containing a book item
 	 * @param page
@@ -80,8 +84,11 @@ public class BookReader {
 			if (component != null) {
 				pageText = component.getUnformattedText();
 			}
-		} catch (JsonParseException | NullPointerException e) {
+		} catch (JsonParseException e) {
+			System.out.println(e);
+			System.out.println(pageText);
 		}
+//		net.minecraft.util.EnumChatFormatting.getTextWithoutFormattingCodes
 		ArrayList<String> lines = new ArrayList<String>();
 		for (String line : pageText.split("\n")) {
 			lines.add(line);
