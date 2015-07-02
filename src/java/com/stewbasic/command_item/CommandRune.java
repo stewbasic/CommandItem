@@ -1,12 +1,15 @@
 package com.stewbasic.command_item;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.minecraft.command.CommandResultStats.Type;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.EnumAction;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -33,6 +36,10 @@ public class CommandRune extends MimicItem {
 	static final String TAG = "cmd";
 	static final String CMD = "cmd";
 	static final String KEEP = "keep";
+	static final String DURATION = "duration";
+
+	private static final Pattern durationOption = Pattern
+			.compile("duration *= *(\\d+)");
 
 	public CommandRune() {
 		super(1);
@@ -61,6 +68,17 @@ public class CommandRune extends MimicItem {
 			cmds.appendTag(new NBTTagString(line));
 		}
 		nbt.setTag(CMD, cmds);
+	}
+
+	public void setOption(ItemStack stack, String option) {
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+		if (KEEP.equals(option)) {
+			nbt.setBoolean(KEEP, true);
+		}
+		Matcher match = durationOption.matcher(option);
+		if (match.matches()) {
+			nbt.setInteger(DURATION, Integer.parseInt(match.group(1)));
+		}
 	}
 
 	private static class CommandSender implements ICommandSender {
@@ -152,10 +170,28 @@ public class CommandRune extends MimicItem {
 				System.out.println(e);
 			}
 		}
+		if (!keep(nbt)) {
+			--stack.stackSize;
+		}
 	}
 
 	private static boolean keep(NBTTagCompound nbt) {
 		return (nbt != null) && nbt.hasKey(KEEP);
+	}
+
+	private static int getDuration(NBTTagCompound nbt) {
+		return (nbt != null && nbt.hasKey(DURATION, NBT.TAG_INT)) ? nbt
+				.getInteger(DURATION) : 0;
+	}
+
+	@Override
+	public int getMaxItemUseDuration(ItemStack stack) {
+		return getDuration(stack.getSubCompound(TAG, false));
+	}
+
+	@Override
+	public EnumAction getItemUseAction(ItemStack stack) {
+		return EnumAction.BLOCK;
 	}
 
 	// Note: In creative mode changes to stack.stackSize seem to be ignored.
@@ -163,17 +199,19 @@ public class CommandRune extends MimicItem {
 	public ItemStack onItemRightClick(ItemStack stack, World world,
 			EntityPlayer player) {
 		NBTTagCompound nbt = stack.getSubCompound(TAG, false);
-		if (!keep(nbt)) {
-			--stack.stackSize;
+		int duration = getDuration(nbt);
+		if (duration > 0) {
+			player.setItemInUse(stack, duration);
+		} else {
+			runCommand(stack, world, player);
 		}
-		runCommand(stack, world, player);
 		return stack;
 	}
 
-	public void setOption(ItemStack stack, String option) {
-		if (KEEP.equals(option)) {
-			NBTTagCompound nbt = stack.getSubCompound(TAG, true);
-			nbt.setBoolean(KEEP, true);
-		}
+	@Override
+	public ItemStack onItemUseFinish(ItemStack stack, World world,
+			EntityPlayer player) {
+		runCommand(stack, world, player);
+		return stack;
 	}
 }
