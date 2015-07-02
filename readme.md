@@ -44,7 +44,6 @@ It is also possible to produce a command rune by specifying the NBT tag directly
 This section is essentially notes for myself...
 * Fix recipe when tertiary stack has >1 item and shift click result.
 * Deal with JSON formatted book contents. Can't use IChatComponent.getFormattedText on server. Can put format codes in Lore/Name NBT 
-* Add other parameters (consume on use, use time, max stack?)
 * Try vanilla client (acceptableRemoteVersions="")
 * Right click slate to open GUI (display tab, command tab)
 * Attach data from GUI to slate, to make the slate like a rune factory

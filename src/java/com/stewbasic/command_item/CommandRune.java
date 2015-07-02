@@ -37,9 +37,12 @@ public class CommandRune extends MimicItem {
 	static final String CMD = "cmd";
 	static final String KEEP = "keep";
 	static final String DURATION = "duration";
+	static final String STACKSIZE = "stacksize";
 
 	private static final Pattern durationOption = Pattern
-			.compile("duration *= *(\\d+)");
+			.compile("duration[ :=]*(\\d+)");
+	private static final Pattern stackSizeOption = Pattern
+			.compile("stacksize[ :=]*(\\d+)");
 
 	public CommandRune() {
 		super(1);
@@ -78,6 +81,10 @@ public class CommandRune extends MimicItem {
 		Matcher match = durationOption.matcher(option);
 		if (match.matches()) {
 			nbt.setInteger(DURATION, Integer.parseInt(match.group(1)));
+		}
+		match = stackSizeOption.matcher(option);
+		if (match.matches()) {
+			nbt.setInteger(STACKSIZE, Integer.parseInt(match.group(1)));
 		}
 	}
 
@@ -180,8 +187,11 @@ public class CommandRune extends MimicItem {
 	}
 
 	private static int getDuration(NBTTagCompound nbt) {
-		return (nbt != null && nbt.hasKey(DURATION, NBT.TAG_INT)) ? nbt
-				.getInteger(DURATION) : 0;
+		if (nbt != null && nbt.hasKey(DURATION, NBT.TAG_INT)) {
+			return nbt.getInteger(DURATION);
+		} else {
+			return 0;
+		}
 	}
 
 	@Override
@@ -192,6 +202,16 @@ public class CommandRune extends MimicItem {
 	@Override
 	public EnumAction getItemUseAction(ItemStack stack) {
 		return EnumAction.BLOCK;
+	}
+
+	@Override
+	public int getItemStackLimit(ItemStack stack) {
+		NBTTagCompound nbt = stack.getSubCompound(TAG, false);
+		if (nbt != null && nbt.hasKey(STACKSIZE, NBT.TAG_INT)) {
+			return nbt.getInteger(STACKSIZE);
+		} else {
+			return super.getItemStackLimit(stack);
+		}
 	}
 
 	// Note: In creative mode changes to stack.stackSize seem to be ignored.
