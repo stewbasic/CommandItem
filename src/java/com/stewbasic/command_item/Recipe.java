@@ -81,6 +81,12 @@ public class Recipe implements IRecipe {
 							description.subList(1, description.size()));
 				}
 			}
+			List<String> options = BookReader.getPageLines(book, 2);
+			if (options != null) {
+				for (String option : options) {
+					commandRune.setOption(result, option);
+				}
+			}
 		}
 		if (match.tertiary != null) {
 			commandRune.setDisplay(result, match.tertiary.stack);

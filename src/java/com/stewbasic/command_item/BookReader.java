@@ -85,8 +85,6 @@ public class BookReader {
 				pageText = component.getUnformattedText();
 			}
 		} catch (JsonParseException e) {
-			System.out.println(e);
-			System.out.println(pageText);
 		}
 //		net.minecraft.util.EnumChatFormatting.getTextWithoutFormattingCodes
 		ArrayList<String> lines = new ArrayList<String>();

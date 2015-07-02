@@ -2,8 +2,6 @@ package com.stewbasic.command_item;
 
 import java.util.List;
 
-import com.google.gson.JsonParseException;
-
 import net.minecraft.command.CommandResultStats.Type;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
@@ -15,10 +13,13 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
+
+import com.google.gson.JsonParseException;
 
 /**
  * Note that this item is not added to any creative inventory tab, and can only
@@ -31,6 +32,7 @@ public class CommandRune extends MimicItem {
 	static final String NAME = "Name";
 	static final String TAG = "cmd";
 	static final String CMD = "cmd";
+	static final String KEEP = "keep";
 
 	public CommandRune() {
 		super(1);
@@ -67,15 +69,11 @@ public class CommandRune extends MimicItem {
 		World world;
 
 		CommandSender(ItemStack stack, EntityPlayer player, World world) {
-			NBTTagCompound nbt = stack.getSubCompound(DISP, false);
-			if (nbt != null && nbt.hasKey(NAME, NBT.TAG_STRING)) {
-				try {
-					name = IChatComponent.Serializer
-							.jsonToComponent(CommandRune.name);
-					name = IChatComponent.Serializer.jsonToComponent(nbt
-							.getString(NAME));
-				} catch (JsonParseException e) {
-				}
+			try {
+				name = IChatComponent.Serializer.jsonToComponent(stack
+						.getDisplayName());
+			} catch (JsonParseException e) {
+				name = new ChatComponentText(stack.getDisplayName());
 			}
 			this.player = player;
 			this.world = world;
@@ -134,29 +132,48 @@ public class CommandRune extends MimicItem {
 	 * Based on
 	 * {@link net.minecraft.command.server.CommandBlockLogic#trigger(World)}.
 	 */
+
+	private void runCommand(ItemStack stack, World world, EntityPlayer player) {
+		MinecraftServer minecraftserver = MinecraftServer.getServer();
+		if (world.isRemote || minecraftserver == null) {
+			return;
+		}
+		ICommandManager icommandmanager = minecraftserver.getCommandManager();
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+		NBTTagList cmds = nbt.getTagList(CMD, NBT.TAG_STRING);
+		try {
+			for (int i = 0; i < cmds.tagCount(); ++i) {
+				String cmd = cmds.getStringTagAt(i);
+				icommandmanager.executeCommand(new CommandSender(stack, player,
+						world), cmd);
+			}
+		} catch (Exception e) {
+			if (CommandItemMod.DEBUG) {
+				System.out.println(e);
+			}
+		}
+	}
+
+	private static boolean keep(NBTTagCompound nbt) {
+		return (nbt != null) && nbt.hasKey(KEEP);
+	}
+
+	// Note: In creative mode changes to stack.stackSize seem to be ignored.
 	@Override
 	public ItemStack onItemRightClick(ItemStack stack, World world,
 			EntityPlayer player) {
-		if (!world.isRemote) {
-			MinecraftServer minecraftserver = MinecraftServer.getServer();
-			if (minecraftserver != null) {
-				ICommandManager icommandmanager = minecraftserver
-						.getCommandManager();
-				NBTTagCompound nbt = stack.getSubCompound(TAG, true);
-				NBTTagList cmds = nbt.getTagList(CMD, NBT.TAG_STRING);
-				try {
-					for (int i = 0; i < cmds.tagCount(); ++i) {
-						String cmd = cmds.getStringTagAt(i);
-						icommandmanager.executeCommand(new CommandSender(stack,
-								player, world), cmd);
-					}
-				} catch (Exception e) {
-					if (CommandItemMod.DEBUG) {
-						System.out.println(e);
-					}
-				}
-			}
+		NBTTagCompound nbt = stack.getSubCompound(TAG, false);
+		if (!keep(nbt)) {
+			--stack.stackSize;
 		}
+		runCommand(stack, world, player);
 		return stack;
+	}
+
+	public void setOption(ItemStack stack, String option) {
+		if (KEEP.equals(option)) {
+			NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+			nbt.setBoolean(KEEP, true);
+		}
 	}
 }
