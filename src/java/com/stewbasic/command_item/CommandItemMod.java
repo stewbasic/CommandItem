@@ -19,6 +19,8 @@ public class CommandItemMod {
 	public static final String MODID = "command_item";
 	public static final String MODNAME = "Command Item";
 	public static final String MODVERSION = "0.1";
+	// Hopefully javac will cull any unreachable code when this is false.
+	public static final boolean DEBUG = false;
 
 	@Instance(value = CommandItemMod.MODID)
 	public static CommandItemMod instance;

@@ -3,7 +3,6 @@ package com.stewbasic.command_item;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -13,11 +12,8 @@ import net.minecraft.world.World;
 /**
  * Note that this item is not added to any creative inventory tab, and can only
  * be obtained using /give. This is analogous to the command block.
- * 
- * @author stewbasic
- * 
  */
-public class CommandRune extends Item {
+public class CommandRune extends MimicItem {
 	static final String name = "command_rune";
 	static final String DISP = "display";
 	static final String LORE = "Lore";
@@ -26,7 +22,7 @@ public class CommandRune extends Item {
 	static final String CMD = "cmd";
 
 	public CommandRune() {
-		super();
+		super(1);
 		setMaxStackSize(64);
 		setUnlocalizedName(name);
 	}
@@ -47,16 +43,17 @@ public class CommandRune extends Item {
 
 	public void setCommands(ItemStack stack, List<String> commands) {
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
-		NBTTagList lore = new NBTTagList();
+		NBTTagList cmds = new NBTTagList();
 		for (String line : commands) {
-			lore.appendTag(new NBTTagString(line));
+			cmds.appendTag(new NBTTagString(line));
 		}
-		nbt.setTag(CMD, lore);
+		nbt.setTag(CMD, cmds);
 	}
 
 	@Override
 	public ItemStack onItemRightClick(ItemStack itemStackIn, World worldIn,
 			EntityPlayer playerIn) {
+		// TODO
 		return itemStackIn;
 	}
 }

@@ -3,9 +3,9 @@ package com.stewbasic.command_item;
 import static net.minecraftforge.oredict.RecipeSorter.Category.SHAPELESS;
 
 import java.util.HashSet;
+
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.item.crafting.ShapelessRecipes;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;

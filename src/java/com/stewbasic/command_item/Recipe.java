@@ -82,6 +82,9 @@ public class Recipe implements IRecipe {
 				}
 			}
 		}
+		if (match.tertiary != null) {
+			commandRune.setDisplay(result, match.tertiary.stack);
+		}
 		return result;
 	}
 

@@ -13,15 +13,16 @@ import net.minecraftforge.common.util.Constants.NBT;
 
 /**
  * A helper class for pulling the text from the NBT tag of a book.
- * 
- * The text in an Array<String> tag with key "pages". Each entry represents one
- * page and can use either of two formats: - A string in double quotes, with
- * escape sequences \\, \", \n. - A JSON object in string format, with key
- * "text" (and other formatting keys)
- * 
- * Example:
+ */
+public class BookReader {
+	// @formatter:off
+	/* The book stores text in an Array<String> tag with key "pages". Each entry
+	 * represents one page and can use either of two formats:
+	 * - A plain string
+	 * - A JSON object in string format, with key "text" (and other formatting keys)
+	 * Example:
 /give @p minecraft:written_book 1 0 {title:,author:,pages:["foo","{text:\"foo\",color:\"green\",extra:[{text:\"bar\",color:\"blue\"}]}"]}
- * Also try pasting into a book:
+	 * Also try pasting into a book:
 §nMinecraft Formatting
 
 §r§00 §11 §22 §33
@@ -35,15 +36,12 @@ import net.minecraftforge.common.util.Constants.NBT;
 §rn §nMinecraft
 §ro §oMinecraft
 §rr §rMinecraft
- * References:
- * http://minecraft.gamepedia.com/Player.dat_format
- * http://minecraft.gamepedia.com/Formatting_codes
- * http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/2219621-v1-0-6-json-book-generator-easily-create-colored
- * 
- * @author stewbasic
- * 
- */
-public class BookReader {
+	 * References:
+	 * http://minecraft.gamepedia.com/Player.dat_format
+	 * http://minecraft.gamepedia.com/Formatting_codes
+	 * http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/2219621-v1-0-6-json-book-generator-easily-create-colored
+	 */
+	 // @formatter:on
 	private static final String PAGES = "pages";
 
 	public static String getPage(ItemStack stack, int page) {
@@ -60,7 +58,10 @@ public class BookReader {
 	}
 
 	/**
-	 * TODO: Fill me. Handle quoted text and JSON.
+	 * TODO: Comment.
+	 * 
+	 * TODO: Can't get formatted text on dedicated server. Can we keep in JSON?
+	 * Have option to return unformatted?
 	 * 
 	 * @param stack
 	 *            An ItemStack containing a book item
@@ -74,9 +75,12 @@ public class BookReader {
 			return null;
 		}
 		try {
-			pageText = IChatComponent.Serializer.jsonToComponent(pageText)
-					.getFormattedText();
-		} catch (JsonParseException jsonparseexception) {
+			IChatComponent component = IChatComponent.Serializer
+					.jsonToComponent(pageText);
+			if (component != null) {
+				pageText = component.getUnformattedText();
+			}
+		} catch (JsonParseException | NullPointerException e) {
 		}
 		ArrayList<String> lines = new ArrayList<String>();
 		for (String line : pageText.split("\n")) {

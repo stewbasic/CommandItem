@@ -1,0 +1,6 @@
+{
+    "parent":"command_item:item/item",
+    "textures": {
+        "layer0":"command_item:items/command_rune"
+    }
+}

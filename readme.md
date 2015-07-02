@@ -25,7 +25,9 @@ TODO
 * Describe GUI
 
 ```
-/give @p command_item:command_rune 1 0 {cmd:{cmd:["tp @p 0 60 0","tell @p Zap!"]}} 
+/give @p command_item:command_rune 1 0 {cmd:{cmd:["tp @p 0 60 0","tell @p Zap!"]}}
+
+/give @p command_item:command_rune 1 0 {cmd:{item:{id:"minecraft:diamond"}}}
 ```
 
 * Vanilla client
