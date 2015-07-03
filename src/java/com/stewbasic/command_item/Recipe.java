@@ -112,7 +112,10 @@ public class Recipe implements IRecipe {
 			remaining[match.book.index] = match.book.stack;
 		}
 		if (match.tertiary != null) {
-			remaining[match.tertiary.index] = match.tertiary.stack;
+			// Even if we return a single tertiary item, it will go into the
+			// player's inventory instead of the crafting table. So instead we
+			// cheat by adding to the count of the stack on the table.
+			++match.tertiary.stack.stackSize;
 		}
 		return remaining;
 	}
