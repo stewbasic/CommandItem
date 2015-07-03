@@ -35,23 +35,28 @@ one per line. The second page can specify the following options (again one per l
 
 Option|Effect
 ----|----
-keep|Command rune is not consumed when used
-duration n|Player must hold right click for n ticks to use the rune
-stacksize n|Identical command runes stack up to n per slot (default 64)
+keep|Command rune is not consumed when used. Note that creative mode players retain runes regardless of this option.
+duration n|Player must hold right click for n ticks to use the rune.
+stacksize n|Identical command runes stack up to n per slot (default 64).
 
 Finally the third and fourth pages can contain a customized name and description. A third crafting ingredient can be added to
 customize the appearance.
 
+![Example book](images/book.png)
+![Crafting recipe](images/crafting.png)
+
 It is also possible to produce a command rune by specifying the NBT tag directly with /give. Examples:
 ```
 /give @p command_item:command_rune 1 0 {cmd:{cmd:["tp @p ~ ~3 ~","tell @p Up!"]}}
-/give @p command_item:command_rune 1 0 {cmd:{cmd:["time set 1000"],keep:1b},mimicItem:{id:"minecraft:clock"}}
+/give @p command_item:command_rune 1 0 {cmd:{cmd:["time set 1000"],keep:1,duration:20},mimicItem:{id:"minecraft:clock"}}
+/give @p command_item:command_rune 1 0 {cmd:{cmd:["particle heart ~ ~2 ~ .4 .4 .4 1 3"],keep:1,Name:"{text:Love,color:red,bold:true}"}}
+/give @p command_item:command_rune 9 0 {cmd:{cmd:["give @p minecraft:diamond_sword"],stacksize:9},mimicItem:{id:"minecraft:diamond"}}
 ```
 
 ## Future improvements
 
 This section is essentially notes for myself...
 * Try vanilla client (acceptableRemoteVersions="")
+* Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Right click slate to open GUI (display tab, command tab)
 * Attach data from GUI to slate, to make the slate like a rune factory
-* Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals

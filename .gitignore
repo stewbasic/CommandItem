@@ -1,5 +1,7 @@
 *
 !src
 !src/**
+!images
+!images/**
 !.gitignore
 !readme.md
