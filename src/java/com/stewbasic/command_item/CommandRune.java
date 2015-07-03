@@ -22,8 +22,6 @@ import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 
-import com.google.gson.JsonParseException;
-
 /**
  * Note that this item is not added to any creative inventory tab, and can only
  * be obtained using /give. This is analogous to the command block.
@@ -51,17 +49,15 @@ public class CommandRune extends MimicItem {
 	}
 
 	public void setName(ItemStack stack, String name) {
-		NBTTagCompound nbt = stack.getSubCompound(DISP, true);
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		nbt.setString(NAME, name);
+		updateDisplay(stack, NAME, true);
 	}
 
-	public void setDescription(ItemStack stack, List<String> description) {
-		NBTTagCompound nbt = stack.getSubCompound(DISP, true);
-		NBTTagList lore = new NBTTagList();
-		for (String line : description) {
-			lore.appendTag(new NBTTagString(line));
-		}
-		nbt.setTag(LORE, lore);
+	public void setLore(ItemStack stack, String lore) {
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+		nbt.setString(LORE, lore);
+		updateDisplay(stack, LORE, true);
 	}
 
 	public void setCommands(ItemStack stack, List<String> commands) {
@@ -88,17 +84,53 @@ public class CommandRune extends MimicItem {
 		}
 	}
 
+	/**
+	 * Parse and copy display information from TAG.key to DISP.key.
+	 * 
+	 * @param key
+	 *            Either NAME or LORE
+	 * @param stripFormatting
+	 *            Whether to strip formatting codes. When called on a dedicated
+	 *            server this must be true.
+	 */
+	private void updateDisplay(ItemStack stack, String key,
+			boolean stripFormatting) {
+		NBTTagCompound tag = stack.getSubCompound(TAG, false);
+		if (tag == null || !tag.hasKey(key, NBT.TAG_STRING)) {
+			return;
+		}
+		String parsedText = BookReader.parse(tag.getString(key),
+				stripFormatting);
+		NBTTagCompound disp = stack.getSubCompound(DISP, true);
+		if (key == NAME) {
+			disp.setString(key, parsedText);
+		} else {
+			List<String> lines = BookReader.splitLines(parsedText);
+			NBTTagList lore = new NBTTagList();
+			for (String line : lines) {
+				lore.appendTag(new NBTTagString(line));
+			}
+			disp.setTag(LORE, lore);
+		}
+	}
+
+	@Override
+	protected void onClientInit(ItemStack stack) {
+		updateDisplay(stack, NAME, false);
+		updateDisplay(stack, LORE, false);
+	}
+
 	private static class CommandSender implements ICommandSender {
 		IChatComponent name;
 		EntityPlayer player;
 		World world;
 
 		CommandSender(ItemStack stack, EntityPlayer player, World world) {
-			try {
-				name = IChatComponent.Serializer.jsonToComponent(stack
-						.getDisplayName());
-			} catch (JsonParseException e) {
-				name = new ChatComponentText(stack.getDisplayName());
+			NBTTagCompound tag = stack.getSubCompound(TAG, false);
+			if (tag != null && tag.hasKey(NAME, NBT.TAG_STRING)) {
+				name = BookReader.parse(tag.getString(NAME));
+			} else {
+				name = new ChatComponentText(CommandRune.name);
 			}
 			this.player = player;
 			this.world = world;

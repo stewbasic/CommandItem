@@ -31,7 +31,16 @@ To craft a command rune, first /give a command slate:
 /give @p command_item:command_slate
 ```
 Craft the command slate with a book (writable or written). The book should contain the desired list of commands on the first page,
-one per line. Optionally the second page may contain a customized name and description. Finally a third crafting ingredient may be added to customize the appearance.
+one per line. The second page can specify the following options (again one per line):
+
+Option|Effect
+----|----
+keep|Command rune is not consumed when used
+duration n|Player must hold right click for n ticks to use the rune
+stacksize n|Identical command runes stack up to n per slot (default 64)
+
+Finally the third and fourth pages can contain a customized name and description. A third crafting ingredient can be added to
+customize the appearance.
 
 It is also possible to produce a command rune by specifying the NBT tag directly with /give. Examples:
 ```
@@ -42,7 +51,6 @@ It is also possible to produce a command rune by specifying the NBT tag directly
 ## Future improvements
 
 This section is essentially notes for myself...
-* Deal with JSON formatted book contents. Can't use IChatComponent.getFormattedText on server. Can put format codes in Lore/Name NBT 
 * Try vanilla client (acceptableRemoteVersions="")
 * Right click slate to open GUI (display tab, command tab)
 * Attach data from GUI to slate, to make the slate like a rune factory

@@ -8,21 +8,24 @@ import com.google.gson.JsonParseException;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraftforge.common.util.Constants.NBT;
 
 /**
- * A helper class for pulling the text from the NBT tag of a book.
+ * A helper class for pulling the text from the NBT tag of a book (written or
+ * writable).
  */
 public class BookReader {
 	// @formatter:off
 	/* The book stores text in an Array<String> tag with key "pages". Each entry
-	 * represents one page and can use either of two formats:
-	 * - A plain string
+	 * represents one page. For writable_book the text is stored verbatim. For
+	 * written_book the text can be either:
+	 * - A "-enclosed string with escape sequences \\, \", \n
 	 * - A JSON object in string format, with key "text" (and other formatting keys)
 	 * Example:
-/give @p minecraft:written_book 1 0 {title:,author:,pages:["foo","{text:\"foo\",color:\"green\",extra:[{text:\"bar\",color:\"blue\"}]}"]}
-	 * Also try pasting into a book:
+/give @p minecraft:written_book 1 0 {title:,author:,pages:["seed","{text:foo,color:green,extra:[{text:\"bar\\n\",color:blue},{text:zap,color:red}]}"]}
+	 * Also try pasting into a writeable_book:
 §nMinecraft Formatting
 
 §r§00 §11 §22 §33
@@ -58,39 +61,73 @@ public class BookReader {
 	}
 
 	/**
-	 * TODO: Comment.
+	 * Parses a string, which may be plain text, quoted or JSON, and produces a
+	 * ChatComponent. Based on
+	 * {@link net.minecraft.client.gui.GuiScreenBook#drawScreen(int,int,float)}.
 	 * 
-	 * TODO: Can't get formatted text on dedicated server. Can we keep in JSON?
-	 * Have option to return unformatted?
-	 * 
-	 * TODO: If begins with \", unescape 
-	 * 
-	 * Based on {@link net.minecraft.client.gui.GuiScreenBook#drawScreen(int,int,float)}.
-	 * 
-	 * @param stack
-	 *            An ItemStack containing a book item
-	 * @param page
-	 *            The desired page number.
-	 * @return
+	 * @param text
+	 *            The text to be parsed
+	 * @return A ChatComponent containing the text
 	 */
-	public static List<String> getPageLines(ItemStack stack, int page) {
-		String pageText = getPage(stack, page);
-		if (pageText == null) {
+	public static IChatComponent parse(String text) {
+		if (text == null) {
 			return null;
 		}
 		try {
+			// The json parser also handles quoted text.
 			IChatComponent component = IChatComponent.Serializer
-					.jsonToComponent(pageText);
+					.jsonToComponent(text);
 			if (component != null) {
-				pageText = component.getUnformattedText();
+				return component;
 			}
 		} catch (JsonParseException e) {
 		}
-//		net.minecraft.util.EnumChatFormatting.getTextWithoutFormattingCodes
+		return new ChatComponentText(text);
+	}
+
+	/**
+	 * Parses a string, which may be plain text, quoted or JSON.
+	 * 
+	 * @param text
+	 *            The text to be parsed
+	 * @param stripFormatting
+	 *            Whether to strip formatting codes (eg colors). When called on
+	 *            a dedicated server this must be true.
+	 * @return The parsed text.
+	 */
+	public static String parse(String text, boolean stripFormatting) {
+		IChatComponent component = parse(text);
+		if (component == null) {
+			return null;
+		}
+		if (stripFormatting) {
+			return net.minecraft.util.EnumChatFormatting
+					.getTextWithoutFormattingCodes(component
+							.getUnformattedText());
+		} else {
+			return component.getFormattedText();
+		}
+	}
+
+	/**
+	 * Splits text into lines.
+	 * 
+	 * @param text
+	 *            Text to be split.
+	 * @return A list of lines.
+	 */
+	public static List<String> splitLines(String text) {
+		if (text == null) {
+			return null;
+		}
 		ArrayList<String> lines = new ArrayList<String>();
-		for (String line : pageText.split("\n")) {
+		for (String line : text.split("\n")) {
 			lines.add(line);
 		}
 		return lines;
+	}
+
+	public static List<String> getUnformattedLines(ItemStack stack, int page) {
+		return splitLines(parse(getPage(stack, page), true));
 	}
 }

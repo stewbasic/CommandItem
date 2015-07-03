@@ -136,13 +136,16 @@ public class MimicItem extends Item {
 		nbt.setString(ID, id);
 		nbt.setInteger(META, metadata);
 	}
+	
+	protected void onClientInit(ItemStack stack) {}
 
 	@Override
 	public int getMetadata(ItemStack stack) {
 		int metadata = getDamage(stack);
 		if (processedTag != null) {
-			NBTTagCompound nbt = stack.getSubCompound(TAG, false);
-			if (nbt != null && !nbt.hasKey(processedTag)) {
+			NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+			if (!nbt.hasKey(processedTag)) {
+				onClientInit(stack);
 				if (nbt.hasKey(ID, NBT.TAG_STRING)) {
 					MimicKey key = new MimicKey(nbt.getString(ID),
 							nbt.getInteger(META));

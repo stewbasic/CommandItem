@@ -69,23 +69,23 @@ public class Recipe implements IRecipe {
 		ItemStack result = new ItemStack(commandRune);
 		if (match.book != null) {
 			ItemStack book = match.book.stack;
-			List<String> commands = BookReader.getPageLines(book, 0);
+			List<String> commands = BookReader.getUnformattedLines(book, 0);
 			if (commands != null) {
 				commandRune.setCommands(result, commands);
 			}
-			List<String> description = BookReader.getPageLines(book, 1);
-			if (description != null && description.size() > 0) {
-				commandRune.setName(result, description.get(0));
-				if (description.size() > 1) {
-					commandRune.setDescription(result,
-							description.subList(1, description.size()));
-				}
-			}
-			List<String> options = BookReader.getPageLines(book, 2);
+			List<String> options = BookReader.getUnformattedLines(book, 1);
 			if (options != null) {
 				for (String option : options) {
 					commandRune.setOption(result, option);
 				}
+			}
+			String name = BookReader.getPage(book, 2);
+			if (name != null) {
+				commandRune.setName(result, name);
+			}
+			String lore = BookReader.getPage(book, 3);
+			if (lore != null) {
+				commandRune.setLore(result, lore);
 			}
 		}
 		if (match.tertiary != null) {
