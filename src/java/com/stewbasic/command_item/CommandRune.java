@@ -198,11 +198,11 @@ public class CommandRune extends MimicItem {
 		ICommandManager icommandmanager = minecraftserver.getCommandManager();
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		NBTTagList cmds = nbt.getTagList(CMD, NBT.TAG_STRING);
+		CommandSender commandSender = new CommandSender(stack, player, world);
 		try {
 			for (int i = 0; i < cmds.tagCount(); ++i) {
 				String cmd = cmds.getStringTagAt(i);
-				icommandmanager.executeCommand(new CommandSender(stack, player,
-						world), cmd);
+				icommandmanager.executeCommand(commandSender, cmd);
 			}
 		} catch (Exception e) {
 			if (CommandItemMod.DEBUG) {

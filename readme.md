@@ -36,8 +36,8 @@ one per line. The second page can specify the following options (again one per l
 Option|Effect
 ----|----
 keep|Command rune is not consumed when used. Note that creative mode players retain runes regardless of this option.
-duration n|Player must hold right click for n ticks to use the rune.
-stacksize n|Identical command runes stack up to n per slot (default 64).
+duration=n|Player must hold right click for n ticks to use the rune.
+stacksize=n|Identical command runes stack up to n per slot (default 64).
 
 Finally the third and fourth pages can contain a customized name and description. A third crafting ingredient can be added to
 customize the appearance.
@@ -53,10 +53,23 @@ It is also possible to produce a command rune by specifying the NBT tag directly
 /give @p command_item:command_rune 9 0 {cmd:{cmd:["give @p minecraft:diamond_sword"],stacksize:9},mimicItem:{id:"minecraft:diamond"}}
 ```
 
+![An item producing particles](images/particles.png)
+
+## Credits
+Many resources were useful when writing this mod; some of them are
+* Minecraft and Forge source code
+* [Tutorials by _Bedrock_Miner_](bedrockminer.jimdo.com/modding-tutorials/)
+* [Packet tutorial by coolAlias](http://www.minecraftforum.net/forums/mapping-and-modding/mapping-and-modding-tutorials/2137055-1-7-x-1-8-customizing-packet-handling-with)
+* [Packet tutorial by diesieben07](http://www.minecraftforge.net/forum/index.php/topic,20135.0.html)
+
 ## Future improvements
 
 This section is essentially notes for myself...
-* Try vanilla client (acceptableRemoteVersions="")
 * Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Right click slate to open GUI (display tab, command tab)
 * Attach data from GUI to slate, to make the slate like a rune factory
+* Add interrupt option (on damage taken)
+* Try vanilla client (acceptableRemoteVersions="")
+	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)
+	* Option 2: Add "vanilla mode" mod configuration option, use vanilla items with NBT on client and server
+ 
