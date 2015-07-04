@@ -9,12 +9,14 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.SidedProxy;
-
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 
-@Mod(modid = CommandItemMod.MODID, name = CommandItemMod.MODNAME, version = CommandItemMod.MODVERSION)
+@Mod(modid = CommandItemMod.MODID, name = CommandItemMod.MODNAME, version = CommandItemMod.MODVERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.8,)")
 public class CommandItemMod {
 	public static final String MODID = "command_item";
 	public static final String MODNAME = "Command Item";
@@ -22,14 +24,24 @@ public class CommandItemMod {
 	// Hopefully javac will cull any unreachable code when this is false.
 	public static final boolean DEBUG = false;
 
+	private static enum Messages {
+		OPEN_GUI
+	}
+
+	public static SimpleNetworkWrapper network;
+
 	@Instance(value = CommandItemMod.MODID)
 	public static CommandItemMod instance;
 
-	@SidedProxy(clientSide = "com.stewbasic.command_item.ClientProxy", serverSide = "com.stewbasic.command_item.ServerProxy")
+	@SidedProxy(clientSide = "com.stewbasic.command_item.ClientProxy", serverSide = "com.stewbasic.command_item.CommonProxy")
 	public static CommonProxy proxy;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		network = NetworkRegistry.INSTANCE
+				.newSimpleChannel(CommandItemMod.MODID);
+		network.registerMessage(OpenGuiMessage.Handler.class,
+				OpenGuiMessage.class, Messages.OPEN_GUI.ordinal(), Side.CLIENT);
 		proxy.preInit(event);
 	}
 
