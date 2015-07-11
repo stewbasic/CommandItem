@@ -2,8 +2,7 @@ package com.stewbasic.command_item;
 
 import java.io.IOException;
 
-import org.lwjgl.input.Keyboard;
-
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,9 +10,12 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.Slot;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import org.lwjgl.input.Keyboard;
 
 /**
  * WIP. See {@link net.minecraft.client.gui.GuiCommandBlock}
@@ -26,6 +28,10 @@ public class GuiScreenCommandItem extends GuiContainer {
 
 	private static enum Tab {
 		COMMANDS, DISPLAY, OPTIONS
+	}
+
+	private static enum Controls {
+		COMMANDS, NAME, LORE, KEEP, DURATION, STACKSIZE;
 	}
 
 	private static class DisplayContainer extends Container {
@@ -58,7 +64,9 @@ public class GuiScreenCommandItem extends GuiContainer {
 	private Container displayContainer, dummyContainer;
 	private Slot display;
 	private Tab tab;
-	private GuiTextField commands, name, lore;
+	private GuiTextField name, commands, lore;
+	private GuiButton keep;
+	private GuiSlider duration, stacksize;
 
 	public GuiScreenCommandItem(EntityPlayer player) {
 		super(new Container() {
@@ -72,27 +80,41 @@ public class GuiScreenCommandItem extends GuiContainer {
 		xSize = guiWidth;
 		ySize = guiHeight;
 		display = displayContainer.getSlot(0);
-		setTab(Tab.COMMANDS);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void setTab(Tab tab) {
 		this.tab = tab;
 		inventorySlots = (tab == Tab.OPTIONS) ? displayContainer
 				: dummyContainer;
+		buttonList.clear();
+		if (tab == Tab.OPTIONS) {
+			buttonList.add(keep);
+			buttonList.add(duration);
+			buttonList.add(stacksize);
+		}
 	}
 
 	@Override
 	public void initGui() {
 		super.initGui();
 		Keyboard.enableRepeatEvents(true);
-		commands = new GuiTextField(0, fontRendererObj, 8, tabHeight + 5,
-				xSize - 16, ySize - tabHeight - 13);
-		commands.setFocused(true);
-		commands.setText("Test");
-		name = new GuiTextField(0, fontRendererObj, 8, tabHeight + 5,
-				xSize - 16, 20);
-		lore = new GuiTextField(0, fontRendererObj, 8, tabHeight + 29,
-				xSize - 16, ySize - tabHeight - 37);
+		commands = new GuiTextField(Controls.COMMANDS.ordinal(),
+				fontRendererObj, 8, tabHeight + 5, xSize - 16, ySize
+						- tabHeight - 13);
+		// commands.setFocused(true);
+		// commands.setText("Te§44st");
+		name = new GuiTextField(Controls.NAME.ordinal(), fontRendererObj, 8,
+				tabHeight + 5, xSize - 16, 20);
+		lore = new GuiTextField(Controls.LORE.ordinal(), fontRendererObj, 8,
+				tabHeight + 29, xSize - 16, ySize - tabHeight - 37);
+		keep = new GuiButtonToggle(Controls.KEEP.ordinal(), guiLeft + 8,
+				guiTop + 27, guiWidth - 40, 20, "Consume", "Keep");
+		duration = new GuiSlider(Controls.DURATION.ordinal(), guiLeft + 8,
+				guiTop + 51, guiWidth - 16, 20, "Duration", 0, 100);
+		stacksize = new GuiSlider(Controls.STACKSIZE.ordinal(), guiLeft + 8,
+				guiTop + 75, guiWidth - 16, 20, "Stack size", 1, 64);
+		setTab(Tab.COMMANDS);
 	}
 
 	@Override
@@ -105,19 +127,18 @@ public class GuiScreenCommandItem extends GuiContainer {
 			int mouseX, int mouseY) {
 		switch (tab) {
 		case COMMANDS:
-			this.mc.getTextureManager().bindTexture(TEXT_TEXTURE);
-			this.drawTexturedModalRect(guiLeft, guiTop + tabHeight, 0,
-					tabHeight, xSize, ySize - tabHeight);
-			this.drawTexturedModalRect(guiLeft, guiTop, 0, ySize, xSize,
-					tabHeight);
+			mc.getTextureManager().bindTexture(TEXT_TEXTURE);
+			drawTexturedModalRect(guiLeft, guiTop + tabHeight, 0, tabHeight,
+					xSize, ySize - tabHeight);
+			drawTexturedModalRect(guiLeft, guiTop, 0, ySize, xSize, tabHeight);
 			break;
 		case DISPLAY:
-			this.mc.getTextureManager().bindTexture(TEXT_TEXTURE);
-			this.drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+			mc.getTextureManager().bindTexture(TEXT_TEXTURE);
+			drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 			break;
 		case OPTIONS:
-			this.mc.getTextureManager().bindTexture(OPTIONS_TEXTURE);
-			this.drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+			mc.getTextureManager().bindTexture(OPTIONS_TEXTURE);
+			drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 			break;
 		}
 	}
@@ -151,20 +172,20 @@ public class GuiScreenCommandItem extends GuiContainer {
 			throws IOException {
 		switch (tab) {
 		case COMMANDS:
-			commands.mouseClicked(mouseX, mouseY, mouseButton);
+			commands.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
+					mouseButton);
 			break;
 		case DISPLAY:
-			name.mouseClicked(mouseX, mouseY, mouseButton);
-			lore.mouseClicked(mouseX, mouseY, mouseButton);
+			name.mouseClicked(mouseX - guiLeft, mouseY - guiTop, mouseButton);
+			lore.mouseClicked(mouseX - guiLeft, mouseY - guiTop, mouseButton);
 			break;
 		case OPTIONS:
 			break;
 		}
 		int dx = mouseX - guiLeft, dy = mouseY - guiTop;
 		if (dy >= 0 && dy < tabHeight && dx >= 0 && dx < xSize) {
-			int tabIndex = (dx * 3) / xSize;
-			setTab((tabIndex == 0) ? Tab.COMMANDS
-					: ((tabIndex == 1) ? Tab.DISPLAY : Tab.OPTIONS));
+			int tabIndex = MathHelper.clamp_int((dx * 3) / xSize, 0, 2);
+			setTab(Tab.values()[tabIndex]);
 		} else {
 			super.mouseClicked(mouseX, mouseY, mouseButton);
 		}
@@ -209,4 +230,8 @@ public class GuiScreenCommandItem extends GuiContainer {
 		}
 	}
 
+	@Override
+	protected void actionPerformed(GuiButton button) throws IOException {
+		System.out.println(button);
+	}
 }
