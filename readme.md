@@ -65,9 +65,9 @@ Many resources were useful when writing this mod; some of them are
 ## Future improvements
 
 This section is essentially notes for myself...
-* Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Right click slate to open GUI (display tab, command tab)
 * Attach data from GUI to slate, to make the slate like a rune factory
+* Unit tests (especially GuiTextBox, CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Add interrupt option (on damage taken)
 * Try vanilla client (acceptableRemoteVersions="")
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)

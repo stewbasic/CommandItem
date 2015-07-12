@@ -3,6 +3,7 @@ package com.stewbasic.command_item;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,13 +19,15 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 
 /**
- * WIP. See {@link net.minecraft.client.gui.GuiCommandBlock}
- * {@link net.minecraft.client.gui.GuiScreenBook}
+ * A GUI for configuring a command rune. The settings are stored on the command
+ * slate, which can be crafted directly into a rune. Based losely on
+ * {@link net.minecraft.client.gui.GuiCommandBlock} and
+ * {@link net.minecraft.client.gui.GuiScreenBook}.
  */
 @SideOnly(Side.CLIENT)
 public class GuiScreenCommandItem extends GuiContainer {
 	private static int guiWidth = 176, guiHeight = 193, tabHeight = 24,
-			hotbarTop = 169, inventoryTop = 93;
+			hotbarTop = 169, inventoryTop = 97;
 
 	private static enum Tab {
 		COMMANDS, DISPLAY, OPTIONS
@@ -63,8 +66,8 @@ public class GuiScreenCommandItem extends GuiContainer {
 			CommandItemMod.MODID + ":textures/gui/text_pane.png");
 	private Container displayContainer, dummyContainer;
 	private Slot display;
-	private Tab tab;
-	private GuiTextField name, commands, lore;
+	private Tab tab = Tab.COMMANDS;
+	private GuiTextBox commands, name, lore;
 	private GuiButton keep;
 	private GuiSlider duration, stacksize;
 
@@ -80,6 +83,7 @@ public class GuiScreenCommandItem extends GuiContainer {
 		xSize = guiWidth;
 		ySize = guiHeight;
 		display = displayContainer.getSlot(0);
+		allowUserInput = false;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -99,14 +103,14 @@ public class GuiScreenCommandItem extends GuiContainer {
 	public void initGui() {
 		super.initGui();
 		Keyboard.enableRepeatEvents(true);
-		commands = new GuiTextField(Controls.COMMANDS.ordinal(),
-				fontRendererObj, 8, tabHeight + 5, xSize - 16, ySize
-						- tabHeight - 13);
-		// commands.setFocused(true);
-		// commands.setText("Te§44st");
-		name = new GuiTextField(Controls.NAME.ordinal(), fontRendererObj, 8,
+		commands = new GuiTextBox(Controls.COMMANDS.ordinal(), fontRendererObj,
+				8, tabHeight + 5, xSize - 16, ySize - tabHeight - 13);
+		commands.setFocused(true);
+		commands.allowFormatting = false;
+		name = new GuiTextBox(Controls.NAME.ordinal(), fontRendererObj, 8,
 				tabHeight + 5, xSize - 16, 20);
-		lore = new GuiTextField(Controls.LORE.ordinal(), fontRendererObj, 8,
+		name.allowLineBreaks = false;
+		lore = new GuiTextBox(Controls.LORE.ordinal(), fontRendererObj, 8,
 				tabHeight + 29, xSize - 16, ySize - tabHeight - 37);
 		keep = new GuiButtonToggle(Controls.KEEP.ordinal(), guiLeft + 8,
 				guiTop + 27, guiWidth - 40, 20, "Consume", "Keep");
@@ -199,6 +203,18 @@ public class GuiScreenCommandItem extends GuiContainer {
 		}
 	}
 
+	/**
+	 * We close the gui on Esc as in
+	 * {@link net.minecraft.client.gui.GuiScreen#keyTyped(char, int) GuiScreen}.
+	 * We don't want to call
+	 * {@link net.minecraft.client.gui.inventory.GuiContainer#keyTyped(char, int)
+	 * super.keyTyped} because it will close the screen when the inventory
+	 * button is pressed.
+	 * 
+	 * @param typedChar
+	 * @param keyCode
+	 * @throws IOException
+	 */
 	@Override
 	protected void keyTyped(char typedChar, int keyCode) throws IOException {
 		switch (tab) {
@@ -212,11 +228,14 @@ public class GuiScreenCommandItem extends GuiContainer {
 		case OPTIONS:
 			break;
 		}
-		super.keyTyped(typedChar, keyCode);
+		if (keyCode == 1) {
+			this.mc.displayGuiScreen((GuiScreen) null);
+		}
 	}
 
 	@Override
 	public void updateScreen() {
+		super.updateScreen();
 		switch (tab) {
 		case COMMANDS:
 			commands.updateCursorCounter();
