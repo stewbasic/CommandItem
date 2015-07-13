@@ -28,14 +28,24 @@ import net.minecraftforge.common.util.Constants.NBT;
  */
 public class CommandRune extends MimicItem {
 	static final String name = "command_rune";
-	static final String DISP = "display";
-	static final String LORE = "Lore";
-	static final String NAME = "Name";
-	static final String TAG = "cmd";
-	static final String CMD = "cmd";
-	static final String KEEP = "keep";
-	static final String DURATION = "duration";
-	static final String STACKSIZE = "stacksize";
+	private static final String DISP = "display";
+	private static final String LORE = "Lore";
+	private static final String NAME = "Name";
+	private static final String TAG = "cmd";
+	private static final String CMD = "cmd";
+	private static final String CMDSTRING = "cmdstring";
+	private static final String KEEP = "keep";
+	private static final String DURATION = "duration";
+	private static final String STACKSIZE = "stacksize";
+
+	private final static NBTField[] copyTags = new NBTField[] {
+			new NBTField(DISP, NBT.TAG_STRING),
+			new NBTField(LORE, NBT.TAG_STRING),
+			new NBTField(NAME, NBT.TAG_STRING),
+			new NBTField(CMDSTRING, NBT.TAG_STRING),
+			new NBTField(KEEP, NBT.TAG_BYTE),
+			new NBTField(DURATION, NBT.TAG_INT),
+			new NBTField(STACKSIZE, NBT.TAG_INT) };
 
 	private static final Pattern durationOption = Pattern
 			.compile("duration[ :=]*(\\d+)");
@@ -54,10 +64,36 @@ public class CommandRune extends MimicItem {
 		updateDisplay(stack, NAME, true);
 	}
 
+	public String getName(ItemStack stack) {
+		return getStringTag(stack, NAME);
+	}
+
 	public void setLore(ItemStack stack, String lore) {
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		nbt.setString(LORE, lore);
 		updateDisplay(stack, LORE, true);
+	}
+
+	public String getLore(ItemStack stack) {
+		return getStringTag(stack, LORE);
+	}
+
+	/**
+	 * Stores the list of commands as a single newline-separated string.
+	 * Normally {@link #setCommands} should be used instead; this is for use by
+	 * {@link com.stewbasic.command_item.GuiScreenCommandItem#updateFields()}.
+	 * 
+	 * @param stack
+	 * @param commands
+	 */
+	public void setCommandString(ItemStack stack, String commands) {
+		// TODO: Update commands here, remove setCommands
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+		nbt.setString(CMDSTRING, commands);
+	}
+
+	public String getCommandString(ItemStack stack) {
+		return getStringTag(stack, CMDSTRING);
 	}
 
 	public void setCommands(ItemStack stack, List<String> commands) {
@@ -70,18 +106,38 @@ public class CommandRune extends MimicItem {
 	}
 
 	public void setOption(ItemStack stack, String option) {
-		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		if (KEEP.equals(option)) {
-			nbt.setBoolean(KEEP, true);
+			setKeep(stack, true);
 		}
 		Matcher match = durationOption.matcher(option);
 		if (match.matches()) {
-			nbt.setInteger(DURATION, Integer.parseInt(match.group(1)));
+			setDuration(stack, Integer.parseInt(match.group(1)));
 		}
 		match = stackSizeOption.matcher(option);
 		if (match.matches()) {
-			nbt.setInteger(STACKSIZE, Integer.parseInt(match.group(1)));
+			setStackSize(stack, Integer.parseInt(match.group(1)));
 		}
+	}
+
+	public void setDuration(ItemStack stack, int duration) {
+		stack.getSubCompound(TAG, true).setInteger(DURATION, duration);
+	}
+
+	public void setStackSize(ItemStack stack, int stackSize) {
+		stack.getSubCompound(TAG, true).setInteger(STACKSIZE, stackSize);
+	}
+
+	public void setKeep(ItemStack stack, boolean keep) {
+		if (keep) {
+			stack.getSubCompound(TAG, true).setBoolean(KEEP, true);
+		} else {
+			stack.getSubCompound(TAG, true).removeTag(KEEP);
+		}
+	}
+
+	public boolean getKeep(ItemStack stack) {
+		return keep(stack.getSubCompound(TAG, false));
+
 	}
 
 	/**
@@ -265,5 +321,17 @@ public class CommandRune extends MimicItem {
 			EntityPlayer player) {
 		runCommand(stack, world, player);
 		return stack;
+	}
+
+	@Override
+	public void copyNBT(NBTTagCompound from, NBTTagCompound to) {
+		super.copyNBT(from, to);
+		copyNBTSubtag(from, to, TAG, copyTags);
+	}
+
+	private String getStringTag(ItemStack stack, String key) {
+		NBTTagCompound nbt = stack.getSubCompound(TAG, false);
+		return (nbt != null && nbt.hasKey(key, NBT.TAG_STRING)) ? nbt
+				.getString(key) : null;
 	}
 }

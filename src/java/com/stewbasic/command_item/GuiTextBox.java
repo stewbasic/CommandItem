@@ -21,12 +21,17 @@ import org.lwjgl.opengl.GL11;
  * because that's what moves.
  */
 public class GuiTextBox extends Gui {
+	public interface GuiTextBoxListener {
+		void onUpdate(int textBoxId, String textContents);
+	}
+
 	private static final int foreColor = 0xffa0a0a0, backColor = 0xff000000,
-			cursorColor = 0xffd0d0d0, margin = 2;
-	public final int buttonId;
+			cursorColor = 0xffd0d0d0, margin = 4;
+	public final int textBoxId;
 	private final FontRenderer fontRenderer;
 	public boolean allowFormatting = true, allowLineBreaks = true;
-	public int xPosition, yPosition, width, height, lineHeight, maxLines;
+	public int xPosition, yPosition, width, height, lineHeight, maxLines,
+			textY;
 	private String text = "";
 	private int maxStringLength = 65536;
 	private int cursorCounter;
@@ -36,6 +41,7 @@ public class GuiTextBox extends Gui {
 	private int lines, selectStartIndex, selectEndIndex, currentLine,
 			currentLineStart;
 	private int[] lineStart, lineEnd;
+	private GuiTextBoxListener listener = null;
 
 	private static int min(int a, int b) {
 		return a < b ? a : b;
@@ -45,16 +51,17 @@ public class GuiTextBox extends Gui {
 		return a > b ? a : b;
 	}
 
-	public GuiTextBox(int buttonId, FontRenderer fontRenderer, int xPosition,
+	public GuiTextBox(int textBoxId, FontRenderer fontRenderer, int xPosition,
 			int yPosition, int width, int height) {
-		this.buttonId = buttonId;
+		this.textBoxId = textBoxId;
 		this.fontRenderer = fontRenderer;
 		this.xPosition = xPosition;
 		this.yPosition = yPosition;
 		this.width = width;
 		this.height = height;
 		lineHeight = fontRenderer.FONT_HEIGHT + margin;
-		maxLines = (height - 2 * margin) / lineHeight;
+		maxLines = max(1, (height - 2 * margin) / lineHeight);
+		textY = yPosition + (height - maxLines * lineHeight) / 2;
 		lineStart = new int[maxLines];
 		lineEnd = new int[maxLines];
 		lines = 1;
@@ -69,7 +76,7 @@ public class GuiTextBox extends Gui {
 		for (int l = 0; l < lines; ++l) {
 			int i = (l == currentLine) ? currentLineStart : lineStart[l];
 			int j = lineEnd[l];
-			int y = yPosition + margin + lineHeight * l;
+			int y = textY + lineHeight * l;
 			fontRenderer.drawStringWithShadow(text.substring(i, j), getX(i, i),
 					y, foreColor);
 			if (isFocused && selectEndIndex >= i && selectEndIndex <= j
@@ -176,7 +183,7 @@ public class GuiTextBox extends Gui {
 				&& mouseY >= yPosition && mouseY < yPosition + height;
 		setFocused(focused);
 		if (focused && mouseButton == 0) {
-			int index, l = max(0, (mouseY - yPosition) / lineHeight);
+			int index, l = max(0, (mouseY - textY) / lineHeight);
 			if (l < lines) {
 				if (l < currentLine) {
 					currentLineStart = lineStart[l];
@@ -189,6 +196,10 @@ public class GuiTextBox extends Gui {
 			}
 			setCursorIndex(index);
 		}
+	}
+
+	public void setListener(GuiTextBoxListener listener) {
+		this.listener = listener;
 	}
 
 	public void updateCursorCounter() {
@@ -260,6 +271,9 @@ public class GuiTextBox extends Gui {
 		text = text.substring(0, i) + newText.substring(0, k)
 				+ text.substring(j);
 		setCursorIndex(i + k);
+		if (listener != null) {
+			listener.onUpdate(textBoxId, text);
+		}
 	}
 
 	/**

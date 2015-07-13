@@ -69,6 +69,6 @@ This section is essentially notes for myself...
 * Attach data from GUI to slate, to make the slate like a rune factory
 * Unit tests (especially GuiTextBox, CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Add interrupt option (on damage taken)
-* Try vanilla client (acceptableRemoteVersions="")
+* Try vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)
 	* Option 2: Add "vanilla mode" mod configuration option, use vanilla items with NBT on client and server

@@ -10,7 +10,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class OpenGuiMessage implements IMessage, Runnable {
-	public static int discriminator = 0;
 	private MessageContext ctx = null;
 
 	@Override
@@ -23,6 +22,9 @@ public class OpenGuiMessage implements IMessage, Runnable {
 
 	@SideOnly(Side.CLIENT)
 	private void openGui() {
+		if (CommandItemMod.DEBUG) {
+			System.out.println("Opening GUI");
+		}
 		EntityPlayer player = CommandItemMod.proxy.getPlayerEntity(ctx);
 		Minecraft.getMinecraft().displayGuiScreen(
 				new GuiScreenCommandItem(player));

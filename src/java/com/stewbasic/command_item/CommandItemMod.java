@@ -25,7 +25,7 @@ public class CommandItemMod {
 	public static final boolean DEBUG = false;
 
 	private static enum Messages {
-		OPEN_GUI
+		OPEN_GUI, UPDATE_COMMAND_SLATE
 	}
 
 	public static SimpleNetworkWrapper network;
@@ -42,6 +42,9 @@ public class CommandItemMod {
 				.newSimpleChannel(CommandItemMod.MODID);
 		network.registerMessage(OpenGuiMessage.Handler.class,
 				OpenGuiMessage.class, Messages.OPEN_GUI.ordinal(), Side.CLIENT);
+		network.registerMessage(UpdateCommandSlateMessage.Handler.class,
+				UpdateCommandSlateMessage.class,
+				Messages.UPDATE_COMMAND_SLATE.ordinal(), Side.SERVER);
 		proxy.preInit(event);
 	}
 

@@ -4,13 +4,14 @@ import java.io.IOException;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
@@ -18,14 +19,17 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import org.lwjgl.input.Keyboard;
 
+import com.stewbasic.command_item.GuiTextBox.GuiTextBoxListener;
+
 /**
  * A GUI for configuring a command rune. The settings are stored on the command
- * slate, which can be crafted directly into a rune. Based losely on
+ * slate, which can be crafted directly into a rune. Based loosely on
  * {@link net.minecraft.client.gui.GuiCommandBlock} and
  * {@link net.minecraft.client.gui.GuiScreenBook}.
  */
 @SideOnly(Side.CLIENT)
-public class GuiScreenCommandItem extends GuiContainer {
+public class GuiScreenCommandItem extends GuiContainer implements
+		GuiTextBoxListener {
 	private static int guiWidth = 176, guiHeight = 193, tabHeight = 24,
 			hotbarTop = 169, inventoryTop = 97;
 
@@ -34,9 +38,12 @@ public class GuiScreenCommandItem extends GuiContainer {
 	}
 
 	private static enum Controls {
-		COMMANDS, NAME, LORE, KEEP, DURATION, STACKSIZE;
+		COMMANDS, NAME, LORE, KEEP, DURATION, STACKSIZE, MIMIC;
 	}
 
+	// TODO: Allow normal interaction with inventory, just redefine shift-click
+	// to take appearance.
+	// TODO: Shift click preview slot to "craft" a CommandRune.
 	private static class DisplayContainer extends Container {
 		public DisplayContainer(EntityPlayer player) {
 			addSlotToContainer(new Slot(new InventoryCraftResult(), 0,
@@ -65,11 +72,15 @@ public class GuiScreenCommandItem extends GuiContainer {
 	private static final ResourceLocation TEXT_TEXTURE = new ResourceLocation(
 			CommandItemMod.MODID + ":textures/gui/text_pane.png");
 	private Container displayContainer, dummyContainer;
-	private Slot display;
-	private Tab tab = Tab.COMMANDS;
+	private Tab tab;
 	private GuiTextBox commands, name, lore;
-	private GuiButton keep;
+	private GuiButtonToggle keep;
 	private GuiSlider duration, stacksize;
+	private int ticksToUpdate = 0, dirtyFields = 0;
+	private boolean mouseDown = false;
+	private final CommandRune commandRune;
+	// A dummy command stack for holding the current configuration.
+	private ItemStack stack = null;
 
 	public GuiScreenCommandItem(EntityPlayer player) {
 		super(new Container() {
@@ -79,11 +90,22 @@ public class GuiScreenCommandItem extends GuiContainer {
 			}
 		});
 		dummyContainer = inventorySlots;
+		commandRune = CommandItemMod.proxy.commandRune;
+		stack = new ItemStack(commandRune);
+		CommandSlate commandSlate = CommandItemMod.proxy.commandSlate;
+		ItemStack heldStack = player.getHeldItem();
+		if (heldStack != null && heldStack.getItem() == commandSlate
+				&& commandSlate.hasConfigNBT(heldStack)) {
+			NBTTagCompound config = new NBTTagCompound();
+			commandRune.copyNBT(commandSlate.getConfigNBT(heldStack), config);
+			stack.setTagCompound(config);
+		}
 		displayContainer = new DisplayContainer(player);
 		xSize = guiWidth;
 		ySize = guiHeight;
-		display = displayContainer.getSlot(0);
-		allowUserInput = false;
+		displayContainer.getSlot(0).inventory
+				.setInventorySlotContents(0, stack);
+		setTab(Tab.COMMANDS);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -107,23 +129,27 @@ public class GuiScreenCommandItem extends GuiContainer {
 				8, tabHeight + 5, xSize - 16, ySize - tabHeight - 13);
 		commands.setFocused(true);
 		commands.allowFormatting = false;
+		commands.setListener(this);
 		name = new GuiTextBox(Controls.NAME.ordinal(), fontRendererObj, 8,
 				tabHeight + 5, xSize - 16, 20);
 		name.allowLineBreaks = false;
+		name.setListener(this);
 		lore = new GuiTextBox(Controls.LORE.ordinal(), fontRendererObj, 8,
 				tabHeight + 29, xSize - 16, ySize - tabHeight - 37);
+		lore.setListener(this);
 		keep = new GuiButtonToggle(Controls.KEEP.ordinal(), guiLeft + 8,
 				guiTop + 27, guiWidth - 40, 20, "Consume", "Keep");
 		duration = new GuiSlider(Controls.DURATION.ordinal(), guiLeft + 8,
 				guiTop + 51, guiWidth - 16, 20, "Duration", 0, 100);
 		stacksize = new GuiSlider(Controls.STACKSIZE.ordinal(), guiLeft + 8,
 				guiTop + 75, guiWidth - 16, 20, "Stack size", 1, 64);
-		setTab(Tab.COMMANDS);
+		readFields();
 	}
 
 	@Override
 	public void onGuiClosed() {
 		Keyboard.enableRepeatEvents(false);
+		writeFields();
 	}
 
 	@Override
@@ -174,6 +200,7 @@ public class GuiScreenCommandItem extends GuiContainer {
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int mouseButton)
 			throws IOException {
+		mouseDown = true;
 		switch (tab) {
 		case COMMANDS:
 			commands.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
@@ -196,10 +223,17 @@ public class GuiScreenCommandItem extends GuiContainer {
 	}
 
 	@Override
+	protected void mouseReleased(int mouseX, int mouseY, int state) {
+		mouseDown = false;
+		super.mouseReleased(mouseX, mouseY, state);
+	}
+
+	@Override
 	protected void handleMouseClick(Slot slot, int slotId, int clickedButton,
 			int clickType) {
 		if (clickedButton == 0 && clickType == 0) {
-			display.inventory.setInventorySlotContents(0, slot.getStack());
+			commandRune.setDisplay(stack, slot.getStack());
+			markDirty(Controls.MIMIC.ordinal());
 		}
 	}
 
@@ -247,10 +281,80 @@ public class GuiScreenCommandItem extends GuiContainer {
 		case OPTIONS:
 			break;
 		}
+		if (ticksToUpdate > 1) {
+			--ticksToUpdate;
+		} else if (ticksToUpdate == 1 && !mouseDown) {
+			ticksToUpdate = 0;
+			writeFields();
+		}
 	}
 
 	@Override
 	protected void actionPerformed(GuiButton button) throws IOException {
-		System.out.println(button);
+		markDirty(button.id);
+	}
+
+	@Override
+	public void onUpdate(int textBoxId, String textContents) {
+		markDirty(textBoxId);
+	}
+
+	private void markDirty(int id) {
+		// Consolidate updates by waiting for a pause in player input.
+		ticksToUpdate = 20;
+		dirtyFields |= (1 << id);
+	}
+
+	private void writeFields() {
+		if (dirtyFields == 0) {
+			return;
+		}
+		for (Controls control : Controls.values()) {
+			if ((dirtyFields & 1) != 0) {
+				switch (control) {
+				case COMMANDS:
+					commandRune.setCommandString(stack, commands.getText());
+					break;
+				case DURATION:
+					commandRune.setDuration(stack, duration.getVal());
+					break;
+				case KEEP:
+					commandRune.setKeep(stack, keep.getState());
+					break;
+				case LORE:
+					commandRune.setLore(stack, lore.getText());
+					break;
+				case NAME:
+					commandRune.setName(stack, name.getText());
+					break;
+				case STACKSIZE:
+					commandRune.setStackSize(stack, stacksize.getVal());
+					break;
+				case MIMIC:
+					// Already copied in handleMouseClick.
+					break;
+				}
+			}
+			dirtyFields /= 2;
+		}
+		NBTTagCompound tag = new NBTTagCompound();
+		commandRune.copyNBT(stack.getTagCompound(), tag);
+		if (CommandItemMod.DEBUG) {
+			System.out.println(tag);
+		}
+		CommandItemMod.network.sendToServer(new UpdateCommandSlateMessage(tag));
+	}
+
+	private void readFields() {
+		String s;
+		s = commandRune.getCommandString(stack);
+		commands.setText((s == null) ? "" : s);
+		s = commandRune.getName(stack);
+		name.setText((s == null) ? "" : s);
+		s = commandRune.getLore(stack);
+		lore.setText((s == null) ? "" : s);
+		duration.setVal(commandRune.getMaxItemUseDuration(stack));
+		stacksize.setVal(commandRune.getItemStackLimit(stack));
+		keep.setState(commandRune.getKeep(stack));
 	}
 }

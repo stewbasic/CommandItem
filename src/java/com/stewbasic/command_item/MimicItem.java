@@ -53,6 +53,19 @@ public class MimicItem extends Item {
 	private final static String TAG = "mimicItem", ID = "id", META = "meta",
 			PROCESSED = "proc", PROCESSED_COMBINED = "procl";
 
+	protected static class NBTField {
+		String key;
+		int type;
+
+		public NBTField(String key, int type) {
+			this.key = key;
+			this.type = type;
+		}
+	}
+
+	private final static NBTField[] copyTags = new NBTField[] {
+			new NBTField(ID, NBT.TAG_STRING), new NBTField(META, NBT.TAG_INT) };
+
 	private static class MimicKey {
 		String id;
 		int metadata;
@@ -135,9 +148,11 @@ public class MimicItem extends Item {
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		nbt.setString(ID, id);
 		nbt.setInteger(META, metadata);
+		clearProcessed(nbt);
 	}
-	
-	protected void onClientInit(ItemStack stack) {}
+
+	protected void onClientInit(ItemStack stack) {
+	}
 
 	@Override
 	public int getMetadata(ItemStack stack) {
@@ -181,13 +196,14 @@ public class MimicItem extends Item {
 	public boolean updateItemStackNBT(NBTTagCompound nbt) {
 		// Ensure that an ItemStack is marked unprocessed when it is loaded.
 		if (nbt != null && nbt.hasKey(TAG, NBT.TAG_COMPOUND)) {
-			NBTTagCompound tag = nbt.getCompoundTag(TAG);
-			tag.removeTag(PROCESSED_COMBINED);
-			// This should never be necessary, since PROCESSED is only used by
-			// remote clients. Just in case...
-			tag.removeTag(PROCESSED);
+			clearProcessed(nbt.getCompoundTag(TAG));
 		}
 		return super.updateItemStackNBT(nbt);
+	}
+
+	private void clearProcessed(NBTTagCompound tag) {
+		tag.removeTag(PROCESSED_COMBINED);
+		tag.removeTag(PROCESSED);
 	}
 
 	private void copyModel(MimicKey key, Item item, int metadata) {
@@ -220,7 +236,8 @@ public class MimicItem extends Item {
 
 	// The next two events are used to distinguish the case of a combined
 	// client+server (ie singleplayer or hosting LAN). We only register as a
-	// listener when side==Side.CLIENT, but check this in case a subclass gets registered.
+	// listener when side==Side.CLIENT, but check this in case a subclass gets
+	// registered.
 	@SubscribeEvent
 	public void onServerConnect(ServerConnectionFromClientEvent event) {
 		if (side == Side.SERVER) {
@@ -253,5 +270,30 @@ public class MimicItem extends Item {
 		lastMeta = reservedMeta - 1;
 		processedTag = PROCESSED;
 		keyToMeta.clear();
+	}
+
+	/**
+	 * Copies fields between two NBT tags, which can be used as tag compounds
+	 * for an ItemStack. Fields are only copied if they are required to
+	 * reconstruct the state of the ItemStack.
+	 * 
+	 * @param from
+	 * @param to
+	 */
+	public void copyNBT(NBTTagCompound from, NBTTagCompound to) {
+		copyNBTSubtag(from, to, TAG, copyTags);
+	}
+
+	protected void copyNBTSubtag(NBTTagCompound from, NBTTagCompound to,
+			String key, NBTField[] fields) {
+		if (from.hasKey(key, NBT.TAG_COMPOUND)) {
+			NBTTagCompound fromTag = from.getCompoundTag(key), toTag = new NBTTagCompound();
+			for (NBTField field : fields) {
+				if (fromTag.hasKey(field.key, field.type)) {
+					toTag.setTag(field.key, fromTag.getTag(field.key));
+				}
+			}
+			to.setTag(key, toTag);
+		}
 	}
 }
