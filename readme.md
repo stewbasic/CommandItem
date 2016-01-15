@@ -72,3 +72,6 @@ This section is essentially notes for myself...
 * Try vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)
 	* Option 2: Add "vanilla mode" mod configuration option, use vanilla items with NBT on client and server
+TODO: Shift click preview slot to "craft" a CommandRune and switch tab
+TODO: Ensure crafting doesn't happen with stale data
+TODO: What should go in the top half of result tab?

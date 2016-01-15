@@ -29,8 +29,8 @@ public class CommandSlate extends Item {
 			if (CommandItemMod.DEBUG) {
 				System.out.println("Opening GUI");
 			}
-			CommandItemMod.network.sendTo(new OpenGuiMessage(),
-					(EntityPlayerMP) player);
+			player.openGui(CommandItemMod.instance, 0, world,
+					(int) player.posX, (int) player.posY, (int) player.posZ);
 		}
 		return stack;
 	}

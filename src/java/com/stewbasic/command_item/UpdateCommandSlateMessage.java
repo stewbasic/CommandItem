@@ -5,6 +5,7 @@ import io.netty.buffer.ByteBuf;
 import java.io.IOException;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.PacketBuffer;
@@ -40,15 +41,16 @@ public class UpdateCommandSlateMessage implements IMessage, Runnable {
 	@Override
 	public void run() {
 		if (tag != null) {
-			if (CommandItemMod.DEBUG) {
-				System.out.println(tag);
-			}
 			CommandSlate commandSlate = CommandItemMod.proxy.commandSlate;
 			CommandRune commandRune = CommandItemMod.proxy.commandRune;
 			EntityPlayer player = CommandItemMod.proxy.getPlayerEntity(ctx);
 			ItemStack stack = player.getHeldItem();
 			if (stack.getItem() == commandSlate) {
 				commandRune.copyNBT(tag, commandSlate.getConfigNBT(stack));
+				Container container = player.openContainer;
+				if (container instanceof GuiHandler.MyContainer) {
+					((GuiHandler.MyContainer) container).update(stack);
+				}
 			}
 		}
 	}

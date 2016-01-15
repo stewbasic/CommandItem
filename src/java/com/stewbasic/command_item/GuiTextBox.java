@@ -434,6 +434,7 @@ public class GuiTextBox extends Gui {
 		} else {
 			selectEndIndex += forward ? 1 : -1;
 		}
+		selectEndIndex = min(text.length(), max(0, selectEndIndex));
 	}
 
 	/**

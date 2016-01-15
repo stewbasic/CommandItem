@@ -128,6 +128,7 @@ public class MimicItem extends Item {
 		}
 	}
 
+	// Make stack mimic display.
 	public void setDisplay(ItemStack stack, ItemStack display) {
 		String id;
 		int metadata;
@@ -147,6 +148,14 @@ public class MimicItem extends Item {
 		}
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		nbt.setString(ID, id);
+		nbt.setInteger(META, metadata);
+		clearProcessed(nbt);
+	}
+
+	// Use a reserved metadata value for the stack, clearing any mimic data.
+	public void setMetadata(ItemStack stack, int metadata) {
+		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
+		nbt.removeTag(ID);
 		nbt.setInteger(META, metadata);
 		clearProcessed(nbt);
 	}
@@ -181,11 +190,14 @@ public class MimicItem extends Item {
 					if (needCopy) {
 						copyModel(key, stack.getItem(), metadata);
 					}
-					setDamage(stack, metadata);
 				} else if (CommandItemMod.DEBUG) {
+					if (nbt.hasKey(META, NBT.TAG_INT)) {
+						metadata = nbt.getInteger(META);
+					}
 					System.out.println("No mimicItem, leaving metadata = "
 							+ metadata);
 				}
+				setDamage(stack, metadata);
 				nbt.setBoolean(processedTag, true);
 			}
 		}
