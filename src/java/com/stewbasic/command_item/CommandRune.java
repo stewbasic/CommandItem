@@ -1,6 +1,5 @@
 package com.stewbasic.command_item;
 
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,42 +79,47 @@ public class CommandRune extends MimicItem {
 
 	/**
 	 * Stores the list of commands as a single newline-separated string.
-	 * Normally {@link #setCommands} should be used instead; this is for use by
-	 * {@link com.stewbasic.command_item.GuiScreenCommandItem#updateFields()}.
 	 * 
 	 * @param stack
 	 * @param commands
 	 */
 	public void setCommandString(ItemStack stack, String commands) {
-		// TODO: Update commands here, remove setCommands
 		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
 		nbt.setString(CMDSTRING, commands);
+		updateCommands(nbt);
 	}
 
 	public String getCommandString(ItemStack stack) {
 		return getStringTag(stack, CMDSTRING);
 	}
 
-	public void setCommands(ItemStack stack, List<String> commands) {
-		NBTTagCompound nbt = stack.getSubCompound(TAG, true);
-		NBTTagList cmds = new NBTTagList();
-		for (String line : commands) {
-			cmds.appendTag(new NBTTagString(line));
+	// Splits command string into commands.
+	private void updateCommands(NBTTagCompound tag) {
+		String commands = tag.getString(CMDSTRING);
+		if (commands == null) {
+			tag.removeTag(CMD);
+		} else {
+			NBTTagList nbtCommands = new NBTTagList();
+			for (String line : commands.split("\n")) {
+				nbtCommands.appendTag(new NBTTagString(line));
+			}
+			tag.setTag(CMD, nbtCommands);
 		}
-		nbt.setTag(CMD, cmds);
 	}
 
-	public void setOption(ItemStack stack, String option) {
-		if (KEEP.equals(option)) {
-			setKeep(stack, true);
-		}
-		Matcher match = durationOption.matcher(option);
-		if (match.matches()) {
-			setDuration(stack, Integer.parseInt(match.group(1)));
-		}
-		match = stackSizeOption.matcher(option);
-		if (match.matches()) {
-			setStackSize(stack, Integer.parseInt(match.group(1)));
+	public void setOptions(ItemStack stack, String options) {
+		for (String option : options.split("\n")) {
+			if (KEEP.equals(option)) {
+				setKeep(stack, true);
+			}
+			Matcher match = durationOption.matcher(option);
+			if (match.matches()) {
+				setDuration(stack, Integer.parseInt(match.group(1)));
+			}
+			match = stackSizeOption.matcher(option);
+			if (match.matches()) {
+				setStackSize(stack, Integer.parseInt(match.group(1)));
+			}
 		}
 	}
 
@@ -161,7 +165,7 @@ public class CommandRune extends MimicItem {
 		if (key == NAME) {
 			disp.setString(key, parsedText);
 		} else {
-			List<String> lines = BookReader.splitLines(parsedText);
+			String[] lines = parsedText.split("\n");
 			NBTTagList lore = new NBTTagList();
 			for (String line : lines) {
 				lore.appendTag(new NBTTagString(line));
@@ -327,6 +331,7 @@ public class CommandRune extends MimicItem {
 	public void copyNBT(NBTTagCompound from, NBTTagCompound to) {
 		super.copyNBT(from, to);
 		copyNBTSubtag(from, to, TAG, copyTags);
+		updateCommands(to.getCompoundTag(TAG));
 	}
 
 	private String getStringTag(ItemStack stack, String key) {

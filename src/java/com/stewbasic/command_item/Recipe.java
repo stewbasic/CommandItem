@@ -1,18 +1,18 @@
 package com.stewbasic.command_item;
 
-import java.util.List;
 import java.util.Set;
 
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
 public class Recipe implements IRecipe {
+	private CommandRune commandRune;
 	private CommandSlate commandSlate;
 	private Set<Item> books;
-	private CommandRune commandRune;
 
 	public Recipe(CommandSlate input, Set<Item> books, CommandRune output) {
 		this.commandSlate = input;
@@ -52,7 +52,9 @@ public class Recipe implements IRecipe {
 				}
 			}
 		}
-		if (match.input == null || match.book == null) {
+		if (match.input == null)
+			return null;
+		if (match.book == null && !commandSlate.hasConfigNBT(match.input.stack)) {
 			return null;
 		}
 		return match;
@@ -67,17 +69,16 @@ public class Recipe implements IRecipe {
 	public ItemStack getCraftingResult(InventoryCrafting inventory) {
 		Match match = findMatch(inventory);
 		ItemStack result = new ItemStack(commandRune);
+		ItemStack input = match.input.stack;
 		if (match.book != null) {
 			ItemStack book = match.book.stack;
-			List<String> commands = BookReader.getUnformattedLines(book, 0);
+			String commands = BookReader.getUnformattedText(book, 0);
 			if (commands != null) {
-				commandRune.setCommands(result, commands);
+				commandRune.setCommandString(result, commands);
 			}
-			List<String> options = BookReader.getUnformattedLines(book, 1);
+			String options = BookReader.getUnformattedText(book, 1);
 			if (options != null) {
-				for (String option : options) {
-					commandRune.setOption(result, option);
-				}
+				commandRune.setOptions(result, options);
 			}
 			String name = BookReader.getPage(book, 2);
 			if (name != null) {
@@ -87,10 +88,15 @@ public class Recipe implements IRecipe {
 			if (lore != null) {
 				commandRune.setLore(result, lore);
 			}
+		} else if (commandSlate.hasConfigNBT(input)) {
+			NBTTagCompound config = new NBTTagCompound();
+			commandRune.copyNBT(commandSlate.getConfigNBT(input), config);
+			result.setTagCompound(config);
 		}
 		if (match.tertiary != null) {
 			commandRune.setDisplay(result, match.tertiary.stack);
 		}
+		result.stackSize = commandRune.getItemStackLimit(result);
 		return result;
 	}
 
@@ -108,6 +114,9 @@ public class Recipe implements IRecipe {
 	public ItemStack[] getRemainingItems(InventoryCrafting inventory) {
 		Match match = findMatch(inventory);
 		ItemStack[] remaining = new ItemStack[inventory.getSizeInventory()];
+		ItemStack stack = match.input.stack.copy();
+		stack.stackSize = 1;
+		remaining[match.input.index] = stack;
 		if (match.book != null) {
 			remaining[match.book.index] = match.book.stack;
 		}

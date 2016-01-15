@@ -1,8 +1,5 @@
 package com.stewbasic.command_item;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.JsonParseException;
 
 import net.minecraft.item.ItemStack;
@@ -109,25 +106,7 @@ public class BookReader {
 		}
 	}
 
-	/**
-	 * Splits text into lines.
-	 * 
-	 * @param text
-	 *            Text to be split.
-	 * @return A list of lines.
-	 */
-	public static List<String> splitLines(String text) {
-		if (text == null) {
-			return null;
-		}
-		ArrayList<String> lines = new ArrayList<String>();
-		for (String line : text.split("\n")) {
-			lines.add(line);
-		}
-		return lines;
-	}
-
-	public static List<String> getUnformattedLines(ItemStack stack, int page) {
-		return splitLines(parse(getPage(stack, page), true));
+	public static String getUnformattedText(ItemStack stack, int page) {
+		return parse(getPage(stack, page), true);
 	}
 }
