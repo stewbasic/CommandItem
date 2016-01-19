@@ -26,9 +26,6 @@ public class CommandSlate extends Item {
 	public ItemStack onItemRightClick(ItemStack stack, World world,
 			EntityPlayer player) {
 		if (player instanceof EntityPlayerMP) {
-			if (CommandItemMod.DEBUG) {
-				System.out.println("Opening GUI");
-			}
 			player.openGui(CommandItemMod.instance, 0, world,
 					(int) player.posX, (int) player.posY, (int) player.posZ);
 		}

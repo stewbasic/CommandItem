@@ -16,18 +16,21 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class UpdateCommandSlateMessage implements IMessage, Runnable {
 	private MessageContext ctx = null;
 	private NBTTagCompound tag = null;
+	private int craft = 0;
 
 	public UpdateCommandSlateMessage() {
 	}
 
-	public UpdateCommandSlateMessage(NBTTagCompound tag) {
+	public UpdateCommandSlateMessage(NBTTagCompound tag, int craft) {
 		this.tag = tag;
+		this.craft = craft;
 	}
 
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		try {
 			tag = (new PacketBuffer(buf)).readNBTTagCompoundFromBuffer();
+			craft = buf.readInt();
 		} catch (IOException e) {
 			tag = null;
 		}
@@ -36,6 +39,7 @@ public class UpdateCommandSlateMessage implements IMessage, Runnable {
 	@Override
 	public void toBytes(ByteBuf buf) {
 		(new PacketBuffer(buf)).writeNBTTagCompoundToBuffer(tag);
+		buf.writeInt(craft);
 	}
 
 	@Override
@@ -49,7 +53,11 @@ public class UpdateCommandSlateMessage implements IMessage, Runnable {
 				commandRune.copyNBT(tag, commandSlate.getConfigNBT(stack));
 				Container container = player.openContainer;
 				if (container instanceof GuiHandler.MyContainer) {
-					((GuiHandler.MyContainer) container).update(stack);
+					GuiHandler.MyContainer myContainer = (GuiHandler.MyContainer) container;
+					myContainer.update(stack);
+					if (craft > 0) {
+						myContainer.craft(craft);
+					}
 				}
 			}
 		}

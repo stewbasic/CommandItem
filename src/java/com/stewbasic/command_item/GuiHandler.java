@@ -33,10 +33,12 @@ public class GuiHandler implements IGuiHandler {
 	static class MyContainer extends Container {
 		final CommandRune commandRune = CommandItemMod.proxy.commandRune;
 		final CommandSlate commandSlate = CommandItemMod.proxy.commandSlate;
+		final EntityPlayer player;
 
 		InventoryCraftResult output;
 
 		public MyContainer(EntityPlayer player) {
+			this.player = player;
 			ItemStack stack = new ItemStack(commandRune);
 			output = new InventoryCraftResult();
 			output.setInventorySlotContents(0, stack);
@@ -44,6 +46,11 @@ public class GuiHandler implements IGuiHandler {
 				@Override
 				public boolean canBeHovered() {
 					return true;
+				}
+
+				@Override
+				public boolean canTakeStack(EntityPlayer player) {
+					return false;
 				}
 			});
 			ItemStack heldStack = player.getHeldItem();
@@ -61,18 +68,24 @@ public class GuiHandler implements IGuiHandler {
 
 		@Override
 		public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-			// Shift-click on a slot. Handle this in GuiScreenCommandItem
-			// instead.
+			// Shift-click on a slot. Handled in GuiScreenCommandItem so do
+			// nothing here.
 			return null;
 		}
 
 		@Override
-		public boolean canInteractWith(EntityPlayer playerIn) {
-			return true;
+		public boolean canInteractWith(EntityPlayer player) {
+			return player == this.player;
 		}
 
 		public ItemStack getOutputStack() {
-			return output.getStackInSlot(0);
+			ItemStack result = output.getStackInSlot(0);
+			if (result == null) {
+				// Shouldn't happen, but better not to crash.
+				result = new ItemStack(commandRune);
+				output.setInventorySlotContents(0, result);
+			}
+			return result;
 		}
 
 		public void update(ItemStack stack) {
@@ -83,6 +96,27 @@ public class GuiHandler implements IGuiHandler {
 				commandRune.copyNBT(commandSlate.getConfigNBT(stack), config);
 			}
 			getOutputStack().setTagCompound(config);
+		}
+
+		public void craft(int craft) {
+			ItemStack result = getOutputStack().copy();
+			if (craft == 1) {
+				result.stackSize = 1;
+				InventoryPlayer inventory = player.inventory;
+				ItemStack held = inventory.getItemStack();
+				if (held != null) {
+					if (held.getItem() == result.getItem()
+							&& ItemStack.areItemStackTagsEqual(held, result)
+							&& held.stackSize < held.getMaxStackSize()) {
+						++held.stackSize;
+					}
+					return;
+				}
+				inventory.setItemStack(result);
+			} else {
+				result.stackSize = commandRune.getItemStackLimit(result);
+				mergeItemStack(result, 1, 37, true);
+			}
 		}
 	}
 
@@ -168,7 +202,7 @@ public class GuiHandler implements IGuiHandler {
 		@Override
 		public void onGuiClosed() {
 			Keyboard.enableRepeatEvents(false);
-			writeFields();
+			writeFields(0);
 		}
 
 		@Override
@@ -218,26 +252,26 @@ public class GuiHandler implements IGuiHandler {
 				int tabIndex = dy / tabHeight;
 				if (dx >= 0 && dy >= 0 && tabIndex < Tab.values().length) {
 					setTab(Tab.values()[tabIndex]);
+					return;
 				}
-			} else {
-				switch (tab) {
-				case COMMANDS:
-					commands.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
-							mouseButton);
-					break;
-				case DISPLAY:
-					name.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
-							mouseButton);
-					lore.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
-							mouseButton);
-					break;
-				case CONFIG:
-					break;
-				case OUTPUT:
-					break;
-				}
-				super.mouseClicked(mouseX, mouseY, mouseButton);
 			}
+			switch (tab) {
+			case COMMANDS:
+				commands.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
+						mouseButton);
+				break;
+			case DISPLAY:
+				name.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
+						mouseButton);
+				lore.mouseClicked(mouseX - guiLeft, mouseY - guiTop,
+						mouseButton);
+				break;
+			case CONFIG:
+				break;
+			case OUTPUT:
+				break;
+			}
+			super.mouseClicked(mouseX, mouseY, mouseButton);
 		}
 
 		@Override
@@ -249,16 +283,29 @@ public class GuiHandler implements IGuiHandler {
 		@Override
 		protected void handleMouseClick(Slot slot, int slotId,
 				int clickedButton, int clickType) {
-			super.handleMouseClick(slot, slotId, clickedButton, clickType);
+			if (slotId != 0)
+				super.handleMouseClick(slot, slotId, clickedButton, clickType);
+			if (slotId == 0 && (clickedButton == 0 || clickedButton == 1)
+					&& (clickType == 0 || clickType == 6)) {
+				writeFields(1);
+				container.craft(1);
+				setTab(Tab.OUTPUT);
+			}
 			if (clickedButton == 0 && clickType == 1) {
-				ItemStack mimicStack = slot.getStack();
-				if (mimicStack != null) {
-					commandRune.setDisplay(stack, mimicStack);
+				if (slotId == 0) {
+					writeFields(2);
+					container.craft(2);
+					setTab(Tab.OUTPUT);
 				} else {
-					commandRune.setMetadata(stack, 0);
+					ItemStack mimicStack = slot.getStack();
+					if (mimicStack != null) {
+						commandRune.setDisplay(stack, mimicStack);
+					} else {
+						commandRune.setMetadata(stack, 0);
+					}
+					markDirty(Controls.MIMIC.ordinal());
+					container.update(stack);
 				}
-				markDirty(Controls.MIMIC.ordinal());
-				container.update(stack);
 			}
 		}
 
@@ -300,7 +347,7 @@ public class GuiHandler implements IGuiHandler {
 				--ticksToUpdate;
 			} else if (ticksToUpdate == 1 && !mouseDown) {
 				ticksToUpdate = 0;
-				writeFields();
+				writeFields(0);
 			}
 		}
 
@@ -333,10 +380,11 @@ public class GuiHandler implements IGuiHandler {
 		 * on the client to be more responsive (see handleMouseClick)
 		 */
 		// @formatter:on
-		private void writeFields() {
-			if (dirtyFields == 0) {
+		private void writeFields(int craft) {
+			if (dirtyFields == 0 && craft == 0) {
 				return;
 			}
+			ticksToUpdate = 0;
 			for (Controls control : Controls.values()) {
 				if ((dirtyFields & 1) != 0) {
 					switch (control) {
@@ -368,7 +416,7 @@ public class GuiHandler implements IGuiHandler {
 			NBTTagCompound tag = new NBTTagCompound();
 			commandRune.copyNBT(stack.getTagCompound(), tag);
 			CommandItemMod.network.sendToServer(new UpdateCommandSlateMessage(
-					tag));
+					tag, craft));
 		}
 
 		private void readFields() {
