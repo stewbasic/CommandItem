@@ -2,12 +2,12 @@
 
 ## About
 
-This mod adds a customizable consumable item.
+This mod adds transportable, single use command blocks.
 
 ## Motivation
 
 The vanilla command block allows map makers a lot of flexibility by triggering arbitrary commands in response to redstone signals. However in some cases it
-would be more natural to give the player a usable item to execute the command. Some possible use cases are:
+would be more natural to give the player a usable item to execute the command. Some possible uses:
 * A teleport scroll.
 * An instant buff item.
 * A customized mob spawning egg.
@@ -16,36 +16,29 @@ I hoped such an item could be added to vanilla. Indeed this has been [suggested 
 and also [requested as a mod](http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/requests-ideas-for-mods/2381398-command-item-mod-request).
 
 This mod can act as a proof of concept to support a suggested addition to vanilla. It also should support basic functionality when running on a server with vanilla clients
-connected.
+connected (doesn't work yet).
 
-## Details
+## Command slate
 
-The mod adds two items:
-* command\_item:command\_slate
-* command\_item:command\_rune
-
-Like the vanilla command block, they can only be obtained via /give. The command rune can be configured to take the appearance of any item, and execute commands when right clicked.
-
-To craft a command rune, first /give a command slate:
+A blank command slate can be configured with commands and options, and used to produce command runes. 
 ```
 /give @p command_item:command_slate
 ```
-Craft the command slate with a book (writable or written). The book should contain the desired list of commands on the first page,
-one per line. The second page can specify the following options (again one per line):
+Right click the slate to open a GUI. Enter the commands, title and description.
+![Entering commands](images/gui_commands.png)
+![Entering title and description](images/gui_title.png)
+Customize options such as whether the item is consumed on use. Note: In creative mode the rune is never consumed.
+![Selecting options](images/gui_options.png)
+Shift-click an item to set the appearance of the rune.
+![Choosing the rune appearance](images/gui_display.png)
+Finally take runes from the output slot.
+![Producing the rune](images/gui_craft.png)
+Right click to use the rune.
+![Using the rune](images/use.png)
 
-Option|Effect
-----|----
-keep|Command rune is not consumed when used. Note that creative mode players retain runes regardless of this option.
-duration=n|Player must hold right click for n ticks to use the rune.
-stacksize=n|Identical command runes stack up to n per slot (default 64).
+## Creating runes with NBT tags
 
-Finally the third and fourth pages can contain a customized name and description. A third crafting ingredient can be added to
-customize the appearance.
-
-![Example book](images/book.png)
-![Crafting recipe](images/crafting.png)
-
-It is also possible to produce a command rune by specifying the NBT tag directly with /give. Examples:
+Instead of using the GUI, you can also use /give to make runes. Examples:
 ```
 /give @p command_item:command_rune 1 0 {cmd:{cmd:["tp @p ~ ~3 ~","tell @p Up!"]}}
 /give @p command_item:command_rune 1 0 {cmd:{cmd:["time set 1000"],keep:1,duration:20},mimicItem:{id:"minecraft:clock"}}
@@ -53,7 +46,13 @@ It is also possible to produce a command rune by specifying the NBT tag directly
 /give @p command_item:command_rune 9 0 {cmd:{cmd:["give @p minecraft:diamond_sword"],stacksize:9},mimicItem:{id:"minecraft:diamond"}}
 ```
 
-![An item producing particles](images/particles.png)
+## Crafting recipes
+
+A configured command slate can be crafted directly into a rune.
+![Crafting a configured slate](images/crafting_configured.png)
+A blank slate can be crafted with a book (containing commands, description and options) and another item (to determine the appearance).
+![Example book](images/book.png)
+![Crafting recipe](images/crafting.png)
 
 ## Credits
 Many resources were useful when writing this mod; some of them are
@@ -67,6 +66,6 @@ Many resources were useful when writing this mod; some of them are
 This section is essentially notes for myself...
 * Unit tests (especially GuiTextBox, CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Add interrupt option (on damage taken)
-* Try vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
+* Allow vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)
 	* Option 2: Add "vanilla mode" mod configuration option, use vanilla items with NBT on client and server
