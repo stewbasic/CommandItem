@@ -6,8 +6,7 @@ This mod adds transportable, single use command blocks.
 
 ## Motivation
 
-The vanilla command block allows map makers a lot of flexibility by triggering arbitrary commands in response to redstone signals. However in some cases it
-would be more natural to give the player a usable item to execute the command. Some possible uses:
+The vanilla command block allows map makers a lot of flexibility by triggering arbitrary commands in response to redstone signals. However in some cases it would be more natural to give the player a usable item to execute the command. Some possible uses:
 * A teleport scroll.
 * An instant buff item.
 * A customized mob spawning egg.
@@ -25,15 +24,25 @@ A blank command slate can be configured with commands and options, and used to p
 /give @p command_item:command_slate
 ```
 Right click the slate to open a GUI. Enter the commands, title and description.
+
 ![Entering commands](images/gui_commands.png)
+
 ![Entering title and description](images/gui_title.png)
+
 Customize options such as whether the item is consumed on use. Note: In creative mode the rune is never consumed.
+
 ![Selecting options](images/gui_options.png)
+
 Shift-click an item to set the appearance of the rune.
+
 ![Choosing the rune appearance](images/gui_display.png)
+
 Finally take runes from the output slot.
+
 ![Producing the rune](images/gui_craft.png)
+
 Right click to use the rune.
+
 ![Using the rune](images/use.png)
 
 ## Creating runes with NBT tags
@@ -49,9 +58,13 @@ Instead of using the GUI, you can also use /give to make runes. Examples:
 ## Crafting recipes
 
 A configured command slate can be crafted directly into a rune.
+
 ![Crafting a configured slate](images/crafting_configured.png)
+
 A blank slate can be crafted with a book (containing commands, description and options) and another item (to determine the appearance).
+
 ![Example book](images/book.png)
+
 ![Crafting recipe](images/crafting.png)
 
 ## Credits
