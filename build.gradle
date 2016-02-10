@@ -1,0 +1,64 @@
+// Based on tutorial (TODO: URL)
+
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+
+apply plugin: 'forge'
+
+version = "0.1"
+
+minecraft {
+    version = "1.8-11.14.3.1473"
+    mappings = "snapshot_20141130"
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs 'src/java'
+        }
+        resources {
+            srcDirs 'src/resources'
+        }
+    }
+    test {
+        java {
+            srcDirs 'src/java_test'
+        }
+    }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+}
+
+processResources {
+    // This will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // Replace $version and $mcversion in mcmod.info.
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+    }
+    // Copy everything else without modification.
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}

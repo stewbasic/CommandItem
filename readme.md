@@ -49,6 +49,7 @@ Instead of using the GUI, you can also use /give to make runes. Examples:
 ## Crafting recipes
 
 A configured command slate can be crafted directly into a rune.
+
 ![Crafting a configured slate](images/crafting_configured.png)
 A blank slate can be crafted with a book (containing commands, description and options) and another item (to determine the appearance).
 ![Example book](images/book.png)
@@ -64,7 +65,7 @@ Many resources were useful when writing this mod; some of them are
 ## Future improvements
 
 This section is essentially notes for myself...
-* Unit tests (especially GuiTextBox, CommandSlate, CommandRune, BookReader). Need to mock all the globals
+* Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Add interrupt option (on damage taken)
 * Allow vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)

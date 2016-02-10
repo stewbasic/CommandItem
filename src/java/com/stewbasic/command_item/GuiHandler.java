@@ -3,7 +3,6 @@ package com.stewbasic.command_item;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
@@ -128,7 +127,7 @@ public class GuiHandler implements IGuiHandler {
 		}
 
 		private static enum Controls {
-			COMMANDS, NAME, LORE, KEEP, DURATION, STACKSIZE, MIMIC;
+			COMMANDS, NAME, LORE, KEEP, DURATION, STACK_SIZE, MIMIC;
 		}
 
 		private static final ResourceLocation CONFIG_TEXTURE = new ResourceLocation(
@@ -193,7 +192,7 @@ public class GuiHandler implements IGuiHandler {
 			duration = new GuiSlider(Controls.DURATION.ordinal(), guiLeft
 					+ tabWidth + 8, guiTop + 32, guiWidth - tabWidth - 16, 20,
 					"Duration", 0, 100);
-			stacksize = new GuiSlider(Controls.STACKSIZE.ordinal(), guiLeft
+			stacksize = new GuiSlider(Controls.STACK_SIZE.ordinal(), guiLeft
 					+ tabWidth + 8, guiTop + 56, guiWidth - tabWidth - 16, 20,
 					"Stack size", 1, 64);
 			readFields();
@@ -330,7 +329,7 @@ public class GuiHandler implements IGuiHandler {
 				lore.textboxKeyTyped(typedChar, keyCode);
 			}
 			if (keyCode == 1) {
-				this.mc.displayGuiScreen((GuiScreen) null);
+				this.mc.displayGuiScreen(null);
 			}
 		}
 
@@ -403,7 +402,7 @@ public class GuiHandler implements IGuiHandler {
 					case NAME:
 						commandRune.setName(stack, name.getText());
 						break;
-					case STACKSIZE:
+					case STACK_SIZE:
 						commandRune.setStackSize(stack, stacksize.getVal());
 						break;
 					case MIMIC:

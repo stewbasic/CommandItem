@@ -5,3 +5,4 @@
 !images/**
 !.gitignore
 !readme.md
+!build.gradle
