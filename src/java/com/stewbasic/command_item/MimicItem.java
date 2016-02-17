@@ -54,8 +54,8 @@ public class MimicItem extends Item {
             PROCESSED = "processed", PROCESSED_COMBINED = "processedClient";
 
     protected static class NBTField {
-        String key;
-        int type;
+        final String key;
+        final int type;
 
         public NBTField(String key, int type) {
             this.key = key;
@@ -67,8 +67,8 @@ public class MimicItem extends Item {
             new NBTField(ID, NBT.TAG_STRING), new NBTField(META, NBT.TAG_INT)};
 
     static class MimicKey {
-        String id;
-        int metadata;
+        final String id;
+        final int metadata;
 
         MimicKey(String id, int metadata) {
             this.id = id;
@@ -104,8 +104,9 @@ public class MimicItem extends Item {
     private Field locationsField = null;
     private String processedTag = null;
     private Map<MimicKey, Integer> keyToMeta = null;
-    private int lastMeta, reservedMeta;
-    private Side side;
+    private int lastMeta;
+    private final int reservedMeta;
+    private final Side side;
 
     public MimicItem(int reservedMeta) {
         // Always reserve meta = 0.
@@ -120,9 +121,8 @@ public class MimicItem extends Item {
                         .getDeclaredField("locations");
                 locationsField.setAccessible(true);
             } catch (Exception e) {
-                if (CommandItemMod.DEBUG) {
-                    System.out.println(e);
-                }
+                locationsField = null;
+                System.out.println("Unable to mimic item display: " + e.toString());
             }
             FMLCommonHandler.instance().bus().register(this);
         }
@@ -259,9 +259,7 @@ public class MimicItem extends Item {
             }
             mesher.register(item, metadata, location);
         } catch (Exception e) {
-            if (CommandItemMod.DEBUG) {
-                System.out.println(e);
-            }
+            System.out.println("Unable to mimic item display: " + e.toString());
         }
     }
 

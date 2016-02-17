@@ -26,7 +26,7 @@ import com.stewbasic.command_item.GuiTextBox.GuiTextBoxListener;
  * outer class, but it's client only.
  */
 public class GuiHandler implements IGuiHandler {
-	private static int guiWidth = 242, guiHeight = 196, tabHeight = 20,
+	private final static int guiWidth = 242, guiHeight = 196, tabHeight = 20,
 			tabWidth = 66, hotbarTop = 172, inventoryTop = 96;
 
 	static class MyContainer extends Container {
@@ -34,7 +34,7 @@ public class GuiHandler implements IGuiHandler {
 		final CommandSlate commandSlate = CommandItemMod.proxy.commandSlate;
 		final EntityPlayer player;
 
-		InventoryCraftResult output;
+		final InventoryCraftResult output;
 
 		public MyContainer(EntityPlayer player) {
 			this.player = player;
@@ -127,22 +127,22 @@ public class GuiHandler implements IGuiHandler {
 		}
 
 		private static enum Controls {
-			COMMANDS, NAME, LORE, KEEP, DURATION, STACK_SIZE, MIMIC;
+			COMMANDS, NAME, LORE, KEEP, DURATION, STACK_SIZE, MIMIC
 		}
 
 		private static final ResourceLocation CONFIG_TEXTURE = new ResourceLocation(
 				CommandItemMod.MODID + ":textures/gui/config_pane.png");
 		private static final ResourceLocation OUTPUT_TEXTURE = new ResourceLocation(
 				CommandItemMod.MODID + ":textures/gui/output_pane.png");
-		private Container displayContainer;
-		private MyContainer container;
+		private final Container displayContainer;
+		private final MyContainer container;
 		private Tab tab;
 		private GuiTextBox commands, name, lore;
 		private GuiButtonToggle keep;
 		private GuiSlider duration, stacksize;
 		private int ticksToUpdate = 0, dirtyFields = 0;
 		private boolean mouseDown = false;
-		private ItemStack stack;
+		private final ItemStack stack;
 		private final CommandRune commandRune = CommandItemMod.proxy.commandRune;
 
 		public GuiScreenCommandItem(EntityPlayer player) {

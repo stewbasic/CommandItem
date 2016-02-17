@@ -9,10 +9,10 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
-public class Recipe implements IRecipe {
-	private CommandRune commandRune;
-	private CommandSlate commandSlate;
-	private Set<Item> books;
+class Recipe implements IRecipe {
+	private final CommandRune commandRune;
+	private final CommandSlate commandSlate;
+	private final Set<Item> books;
 
 	public Recipe(CommandSlate input, Set<Item> books, CommandRune output) {
 		this.commandSlate = input;
@@ -21,8 +21,8 @@ public class Recipe implements IRecipe {
 	}
 
 	private static class StackAndLocation {
-		ItemStack stack;
-		int index;
+		final ItemStack stack;
+		final int index;
 
 		StackAndLocation(ItemStack stack, int index) {
 			this.stack = stack;

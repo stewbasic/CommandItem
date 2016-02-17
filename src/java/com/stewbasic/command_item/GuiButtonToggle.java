@@ -6,27 +6,27 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiButtonToggle extends GuiButton {
-	private boolean state = false;
-	private String textTrue, textFalse;
+    private boolean state = false;
+    private final String textTrue, textFalse;
 
-	public GuiButtonToggle(int buttonId, int x, int y, int width, int height,
-			String textFalse, String textTrue) {
-		super(buttonId, x, y, width, height, textFalse);
-		this.textFalse = textFalse;
-		this.textTrue = textTrue;
-	}
+    public GuiButtonToggle(int buttonId, int x, int y, int width, int height,
+                           String textFalse, String textTrue) {
+        super(buttonId, x, y, width, height, textFalse);
+        this.textFalse = textFalse;
+        this.textTrue = textTrue;
+    }
 
-	public void setState(boolean state) {
-		this.state = state;
-		displayString = state ? textTrue : textFalse;
-	}
+    public void setState(boolean state) {
+        this.state = state;
+        displayString = state ? textTrue : textFalse;
+    }
 
-	public boolean getState() {
-		return state;
-	}
+    public boolean getState() {
+        return state;
+    }
 
-	@Override
-	public void mouseReleased(int mouseX, int mouseY) {
-		setState(!state);
-	}
+    @Override
+    public void mouseReleased(int mouseX, int mouseY) {
+        setState(!state);
+    }
 }

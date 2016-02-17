@@ -12,6 +12,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+@SuppressWarnings("UnusedDeclaration")
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
 	private void register(Item item, String name) {

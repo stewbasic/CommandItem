@@ -13,100 +13,100 @@ import net.minecraftforge.common.util.Constants.NBT;
  * A helper class for pulling the text from the NBT tag of a book (written or
  * writable).
  */
-public class BookReader {
-	// @formatter:off
-	/* The book stores text in an Array<String> tag with key "pages". Each entry
+class BookReader {
+    // @formatter:off
+    /* The book stores text in an Array<String> tag with key "pages". Each entry
 	 * represents one page. For writable_book the text is stored verbatim. For
 	 * written_book the text can be either:
 	 * - A "-enclosed string with escape sequences \\, \", \n
 	 * - A JSON object in string format, with key "text" (and other formatting keys)
 	 * Example:
-/give @p minecraft:written_book 1 0 {title:,author:,pages:["seed","{text:foo,color:green,extra:[{text:\"bar\\n\",color:blue},{text:zap,color:red}]}"]}
+/give @p minecraft:written_book 1 0 {title:,author:,pages:["seed","{text:foo,color:green,
+extra:[{text:\"bar\\n\",color:blue},{text:zap,color:red}]}"]}
 	 * Also try pasting into a writeable_book:
-§nMinecraft Formatting
+ï¿½nMinecraft Formatting
 
-§r§00 §11 §22 §33
-§44 §55 §66 §77
-§88 §99 §aa §bb
-§cc §dd §ee §ff
+ï¿½rï¿½00 ï¿½11 ï¿½22 ï¿½33
+ï¿½44 ï¿½55 ï¿½66 ï¿½77
+ï¿½88 ï¿½99 ï¿½aa ï¿½bb
+ï¿½cc ï¿½dd ï¿½ee ï¿½ff
 
-§r§0k §kMinecraft
-§rl §lMinecraft
-§rm §mMinecraft
-§rn §nMinecraft
-§ro §oMinecraft
-§rr §rMinecraft
+ï¿½rï¿½0k ï¿½kMinecraft
+ï¿½rl ï¿½lMinecraft
+ï¿½rm ï¿½mMinecraft
+ï¿½rn ï¿½nMinecraft
+ï¿½ro ï¿½oMinecraft
+ï¿½rr ï¿½rMinecraft
 	 * References:
 	 * http://minecraft.gamepedia.com/Player.dat_format
 	 * http://minecraft.gamepedia.com/Formatting_codes
-	 * http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/2219621-v1-0-6-json-book-generator-easily-create-colored
+	 * http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-tools/2219621-v1-0-6
+	 * -json-book-generator-easily-create-colored
 	 */
-	 // @formatter:on
-	private static final String PAGES = "pages";
+    // @formatter:on
+    private static final String PAGES = "pages";
 
-	public static String getPage(ItemStack stack, int page) {
-		NBTTagCompound nbt = stack.getTagCompound();
-		if (nbt == null) {
-			return null;
-		}
-		NBTTagList pages = nbt.getTagList(PAGES, NBT.TAG_STRING);
-		if (pages.tagCount() > page) {
-			return pages.getStringTagAt(page);
-		} else {
-			return null;
-		}
-	}
+    public static String getPage(ItemStack stack, int page) {
+        NBTTagCompound nbt = stack.getTagCompound();
+        if (nbt == null) {
+            return null;
+        }
+        NBTTagList pages = nbt.getTagList(PAGES, NBT.TAG_STRING);
+        if (pages.tagCount() > page) {
+            return pages.getStringTagAt(page);
+        } else {
+            return null;
+        }
+    }
 
-	/**
-	 * Parses a string, which may be plain text, quoted or JSON, and produces a
-	 * ChatComponent. Based on
-	 * {@link net.minecraft.client.gui.GuiScreenBook#drawScreen(int,int,float)}.
-	 * 
-	 * @param text
-	 *            The text to be parsed
-	 * @return A ChatComponent containing the text
-	 */
-	public static IChatComponent parse(String text) {
-		if (text == null) {
-			return null;
-		}
-		try {
-			// The json parser also handles quoted text.
-			IChatComponent component = IChatComponent.Serializer
-					.jsonToComponent(text);
-			if (component != null) {
-				return component;
-			}
-		} catch (JsonParseException e) {
-		}
-		return new ChatComponentText(text);
-	}
+    /**
+     * Parses a string, which may be plain text, quoted or JSON, and produces a
+     * ChatComponent. Based on
+     * {@link net.minecraft.client.gui.GuiScreenBook#drawScreen(int, int, float)}.
+     *
+     * @param text The text to be parsed
+     * @return A ChatComponent containing the text
+     */
+    public static IChatComponent parse(String text) {
+        if (text == null) {
+            return null;
+        }
+        try {
+            // The json parser also handles quoted text.
+            IChatComponent component = IChatComponent.Serializer
+                    .jsonToComponent(text);
+            if (component != null) {
+                return component;
+            }
+        } catch (JsonParseException e) {
+            text = e.toString();
+        }
+        return new ChatComponentText(text);
+    }
 
-	/**
-	 * Parses a string, which may be plain text, quoted or JSON.
-	 * 
-	 * @param text
-	 *            The text to be parsed
-	 * @param stripFormatting
-	 *            Whether to strip formatting codes (eg colors). When called on
-	 *            a dedicated server this must be true.
-	 * @return The parsed text.
-	 */
-	public static String parse(String text, boolean stripFormatting) {
-		IChatComponent component = parse(text);
-		if (component == null) {
-			return null;
-		}
-		if (stripFormatting) {
-			return net.minecraft.util.EnumChatFormatting
-					.getTextWithoutFormattingCodes(component
-							.getUnformattedText());
-		} else {
-			return component.getFormattedText();
-		}
-	}
+    /**
+     * Parses a string, which may be plain text, quoted or JSON.
+     *
+     * @param text            The text to be parsed
+     * @param stripFormatting Whether to strip formatting codes (eg colors). When called on
+     *                        a dedicated server this must be true.
+     * @return The parsed text.
+     */
+    public static String parse(String text, boolean stripFormatting) {
+        IChatComponent component = parse(text);
+        if (component == null) {
+            return null;
+        }
+        if (stripFormatting) {
+            return net.minecraft.util.EnumChatFormatting
+                    .getTextWithoutFormattingCodes(component
+                            .getUnformattedText());
+        } else {
+            return component.getFormattedText();
+        }
+    }
 
-	public static String getUnformattedText(ItemStack stack, int page) {
-		return parse(getPage(stack, page), true);
-	}
+    public static String getUnformattedText(ItemStack stack, int page) {
+        return parse(getPage(stack, page), true);
+    }
 }

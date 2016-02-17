@@ -25,13 +25,13 @@ public class GuiTextBox extends Gui {
         void onUpdate(int textBoxId, String textContents);
     }
 
-    public final int textBoxId;
+    private final int textBoxId;
     public boolean allowFormatting = true, allowLineBreaks = true;
 
     private static final int foreColor = 0xffa0a0a0, backColor = 0xff000000,
             cursorColor = 0xffd0d0d0, margin = 4;
-    protected final FontRenderer fontRenderer;
-    protected int xPosition, yPosition, width, height, lineHeight, maxLines,
+    private final FontRenderer fontRenderer;
+    protected final int xPosition, yPosition, width, height, lineHeight, maxLines,
             textY;
     private String text = "";
     private int maxStringLength = 65536;
@@ -41,7 +41,7 @@ public class GuiTextBox extends Gui {
     // selectStartIndex.
     protected int lines, selectStartIndex, selectEndIndex, currentLine,
             currentLineStart;
-    protected int[] lineStart, lineEnd;
+    protected final int[] lineStart, lineEnd;
     private GuiTextBoxListener listener = null;
 
     private static int min(int a, int b) {
@@ -70,7 +70,7 @@ public class GuiTextBox extends Gui {
     }
 
     // Non-static to be easily mockable.
-    protected void guiDrawRect(int x1, int y1, int x2, int y2, int color) {
+    void guiDrawRect(int x1, int y1, int x2, int y2, int color) {
         Gui.drawRect(x1, y1, x2, y2, color);
     }
 
@@ -100,11 +100,11 @@ public class GuiTextBox extends Gui {
         }
     }
 
-    protected boolean isShiftKeyDown() {
+    boolean isShiftKeyDown() {
         return GuiScreen.isShiftKeyDown();
     }
 
-    protected boolean isCtrlKeyDown() {
+    boolean isCtrlKeyDown() {
         return GuiScreen.isCtrlKeyDown();
     }
 
@@ -116,9 +116,9 @@ public class GuiTextBox extends Gui {
         return GuiScreen.getClipboardString();
     }
 
-    public boolean textboxKeyTyped(char typedChar, int keyCode) {
+    public void textboxKeyTyped(char typedChar, int keyCode) {
         if (!isFocused) {
-            return false;
+            return;
         }
         int action = 0;
         if (keyCode == Keyboard.KEY_A && isCtrlKeyDown()) {
@@ -193,11 +193,8 @@ public class GuiTextBox extends Gui {
             }
             if (isAllowedCharacter(typedChar)) {
                 writeText(Character.toString(typedChar));
-            } else {
-                return false;
             }
         }
-        return true;
     }
 
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
@@ -226,10 +223,6 @@ public class GuiTextBox extends Gui {
 
     public void updateCursorCounter() {
         ++cursorCounter;
-    }
-
-    public int getSelectEndIndex() {
-        return selectEndIndex;
     }
 
     /**
@@ -299,13 +292,6 @@ public class GuiTextBox extends Gui {
     }
 
     /**
-     * Getter for the focused field
-     */
-    public boolean isFocused() {
-        return isFocused;
-    }
-
-    /**
      * Sets focus to this gui element
      */
     public void setFocused(boolean focused) {
@@ -315,18 +301,7 @@ public class GuiTextBox extends Gui {
         isFocused = focused;
     }
 
-    public int getMaxStringLength() {
-        return maxStringLength;
-    }
-
-    public void setMaxStringLength(int maxStringLength) {
-        this.maxStringLength = maxStringLength;
-        if (text.length() > maxStringLength) {
-            text = text.substring(0, maxStringLength);
-        }
-    }
-
-    protected void drawSelectionRect(int x1, int y1, int x2, int y2) {
+    void drawSelectionRect(int x1, int y1, int x2, int y2) {
         if (x1 < x2) {
             int x = x1;
             x1 = x2;

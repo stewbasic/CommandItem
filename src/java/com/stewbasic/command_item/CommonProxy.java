@@ -20,8 +20,8 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.oredict.RecipeSorter;
 
 public class CommonProxy {
-	protected CommandSlate commandSlate;
-	protected CommandRune commandRune;
+	CommandSlate commandSlate;
+	CommandRune commandRune;
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
