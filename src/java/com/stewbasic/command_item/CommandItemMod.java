@@ -18,8 +18,10 @@ import net.minecraftforge.fml.relauncher.Side;
 
 @Mod(modid = CommandItemMod.MODID, name = CommandItemMod.MODNAME, version = CommandItemMod.MODVERSION, acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.8,)")
 public class CommandItemMod {
+    public static final String MODNAME = "Command Item";
+    // Must be kept in sync with mcmod.info
 	public static final String MODID = "command_item";
-	public static final String MODNAME = "Command Item";
+    // Must be kept in sync with build.gradle
 	public static final String MODVERSION = "0.1";
 	// Hopefully javac will cull any unreachable code when this is false.
 	public static final boolean DEBUG = false;

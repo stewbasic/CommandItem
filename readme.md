@@ -71,4 +71,3 @@ This section is essentially notes for myself...
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)
 	* Option 2: Add "vanilla mode" mod configuration option, use vanilla items with NBT on client and server
 Try to reduce the globals (eg commandRune, commandItem, move packet into proxy)
-Fix mcmodinfo

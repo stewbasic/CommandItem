@@ -19,6 +19,7 @@ buildscript {
 
 apply plugin: 'forge'
 
+// Must be kept in sync with CommandItemMod.java
 version = "0.1"
 
 minecraft {
