@@ -65,7 +65,6 @@ Many resources were useful when writing this mod; some of them are
 ## Future improvements
 
 This section is essentially notes for myself...
-* Unit tests (especially CommandSlate, CommandRune, BookReader). Need to mock all the globals
 * Add interrupt option (on damage taken)
 * Allow vanilla client ([ideas](http://www.minecraftforge.net/forum/index.php/topic,31765.html))
 	* Option 1: Intercept packets to client and translate mod items to vanilla items (with custom NBT)

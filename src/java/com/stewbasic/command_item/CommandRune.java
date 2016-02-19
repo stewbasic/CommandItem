@@ -20,6 +20,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
+import net.minecraftforge.fml.relauncher.Side;
 
 /**
  * Note that this item is not added to any creative inventory tab, and can only
@@ -53,6 +54,13 @@ public class CommandRune extends MimicItem {
 
     public CommandRune() {
         super(1);
+        setMaxStackSize(64);
+        setUnlocalizedName(name);
+    }
+
+    // This constructor is intended to be used in unit tests.
+    CommandRune(Side side) {
+        super(1, side);
         setMaxStackSize(64);
         setUnlocalizedName(name);
     }
@@ -101,7 +109,7 @@ public class CommandRune extends MimicItem {
         } else {
             NBTTagList nbtCommands = new NBTTagList();
             for (String line : commands.split("\n")) {
-                nbtCommands.appendTag(new NBTTagString(line));
+                if (!line.isEmpty()) nbtCommands.appendTag(new NBTTagString(line));
             }
             tag.setTag(CMD, nbtCommands);
         }
@@ -144,6 +152,10 @@ public class CommandRune extends MimicItem {
 
     }
 
+    protected String parse(String text, boolean stripFormatting) {
+        return BookReader.parse(text, stripFormatting);
+    }
+
     /**
      * Parse and copy display information from TAG.key to DISP.key.
      *
@@ -157,8 +169,7 @@ public class CommandRune extends MimicItem {
         if (tag == null || !tag.hasKey(key, NBT.TAG_STRING)) {
             return;
         }
-        String parsedText = BookReader.parse(tag.getString(key),
-                stripFormatting);
+        String parsedText = parse(tag.getString(key), stripFormatting);
         NBTTagCompound disp = stack.getSubCompound(DISP, true);
         if (key.equals(NAME)) {
             disp.setString(key, parsedText);
