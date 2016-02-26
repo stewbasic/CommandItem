@@ -12,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.IThreadListener;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -46,7 +47,7 @@ public class CommonProxy implements IGuiHandler {
     public void preInit(CommandItemMod mod, FMLPreInitializationEvent event) {
         this.mod = mod;
         registerNetworkHandlers();
-        CommandRune commandRune = new CommandRune();
+        CommandRune commandRune = new CommandRune(this);
         register(commandRune);
         CommandSlate commandSlate = new CommandSlate(commandRune);
         register(commandSlate);
@@ -118,6 +119,10 @@ public class CommonProxy implements IGuiHandler {
 
     public void register(Item item) {
         GameRegistry.registerItem(item, getName(item));
+    }
+
+    public Side side() {
+        return FMLCommonHandler.instance().getEffectiveSide();
     }
 
     protected static String getName(Item item) {

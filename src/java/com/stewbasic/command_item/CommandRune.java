@@ -52,8 +52,8 @@ public class CommandRune extends MimicItem {
     private static final Pattern stackSizeOption = Pattern
             .compile("stacksize[ :=]*(\\d+)");
 
-    public CommandRune() {
-        super(1);
+    public CommandRune(CommonProxy proxy) {
+        super(1, proxy);
         setMaxStackSize(64);
         setUnlocalizedName(name);
     }

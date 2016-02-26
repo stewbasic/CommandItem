@@ -109,10 +109,10 @@ public class MimicItem extends Item {
     private Map<MimicKey, Integer> keyToMeta = null;
     private int lastMeta;
 
-    public MimicItem(int reservedMeta) {
+    public MimicItem(int reservedMeta, CommonProxy proxy) {
         // Always reserve meta = 0.
         this.reservedMeta = (reservedMeta < 1) ? 1 : reservedMeta;
-        side = FMLCommonHandler.instance().getEffectiveSide();
+        side = proxy.side();
         if (side == Side.CLIENT) {
             // Set up client specific stuff.
             keyToMeta = new HashMap<MimicKey, Integer>();

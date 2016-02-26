@@ -7,6 +7,7 @@ import net.minecraft.inventory.InventoryCraftResult;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.fml.relauncher.Side;
 
 // The container used by SlateGui.
 class SlateGuiContainer extends Container {
@@ -105,6 +106,9 @@ class SlateGuiContainer extends Container {
             inventory.setItemStack(result);
         } else {
             result.stackSize = commandRune.getItemStackLimit(result);
+            // Trigger the client initialization so result can combine with existing items. This
+            // is only necessary for the singleplayer server case.
+            if (CommandItemMod.proxy.side() == Side.CLIENT) result.getMetadata();
             mergeItemStack(result, 1, 37, true);
         }
     }
