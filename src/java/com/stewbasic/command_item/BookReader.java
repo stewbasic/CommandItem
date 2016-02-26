@@ -16,7 +16,7 @@ import net.minecraftforge.common.util.Constants.NBT;
 class BookReader {
     // @formatter:off
     /* The book stores text in an Array<String> tag with key "pages". Each entry
-	 * represents one page. For writable_book the text is stored verbatim. For
+     * represents one page. For writable_book the text is stored verbatim. For
 	 * written_book the text can be either:
 	 * - A "-enclosed string with escape sequences \\, \", \n
 	 * - A JSON object in string format, with key "text" (and other formatting keys)
@@ -79,7 +79,7 @@ extra:[{text:\"bar\\n\",color:blue},{text:zap,color:red}]}"]}
                 return component;
             }
         } catch (JsonParseException e) {
-            text = e.toString();
+            // Text may be plain, not JSON, so leave as is.
         }
         return new ChatComponentText(text);
     }

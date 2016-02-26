@@ -11,10 +11,12 @@ import net.minecraft.util.MathHelper;
  * tied to GameSettings, so we can't use it directly.
  */
 public class GuiSlider extends GuiButton {
-    private final int minVal, valRange, boxX, boxWidth;
-    private int currentVal;
     private final static int forecolor = 0xffdddddd, backcolor = 0xff000000;
+
+    private final int minVal, valRange, boxX, boxWidth;
     private final String label;
+
+    private int currentVal;
     private String text;
     private boolean dragging = false;
 

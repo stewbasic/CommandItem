@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-class UpdateCommandSlateMessage implements IMessage, Runnable {
+public class UpdateCommandSlateMessage implements IMessage, Runnable {
     private MessageContext ctx = null;
     private NBTTagCompound tag = null;
     private int craft = 0;
@@ -47,18 +47,18 @@ class UpdateCommandSlateMessage implements IMessage, Runnable {
     @Override
     public void run() {
         if (tag != null) {
-            CommandSlate commandSlate = CommandItemMod.proxy.commandSlate;
-            CommandRune commandRune = CommandItemMod.proxy.commandRune;
             EntityPlayer player = CommandItemMod.proxy.getPlayerEntity(ctx);
             ItemStack stack = player.getHeldItem();
-            if (stack.getItem() == commandSlate) {
+            if (stack.getItem() instanceof CommandSlate) {
+                CommandSlate commandSlate = (CommandSlate) stack.getItem();
+                CommandRune commandRune = commandSlate.commandRune;
                 commandRune.copyNBT(tag, commandSlate.getConfigNBT(stack));
                 Container container = player.openContainer;
-                if (container instanceof GuiHandler.MyContainer) {
-                    GuiHandler.MyContainer myContainer = (GuiHandler.MyContainer) container;
-                    myContainer.update(stack);
+                if (container instanceof SlateGuiContainer) {
+                    SlateGuiContainer slateGuiContainer = (SlateGuiContainer) container;
+                    slateGuiContainer.update(stack);
                     if (craft > 0) {
-                        myContainer.craft(craft);
+                        slateGuiContainer.craft(craft);
                     }
                 }
             }

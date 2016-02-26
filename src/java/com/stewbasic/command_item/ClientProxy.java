@@ -12,37 +12,42 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings("UnusedDeclaration")
 @SideOnly(Side.CLIENT)
 public class ClientProxy extends CommonProxy {
-	private void register(Item item, String name) {
-		register(item, 0, name);
-	}
+    private final List<Item> itemsToRegister = new ArrayList<Item>();
 
-	private void register(Item item, int meta, String name) {
-		ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem()
-				.getItemModelMesher();
-		mesher.register(item, meta, new ModelResourceLocation(
-				CommandItemMod.MODID + ":" + name, "inventory"));
+    @EventHandler
+    @Override
+    public void init(FMLInitializationEvent event) {
+        super.init(event);
+        ItemModelMesher mesher = Minecraft.getMinecraft().getRenderItem()
+                .getItemModelMesher();
+        for (Item item : itemsToRegister) {
+            mesher.register(item, 0, new ModelResourceLocation(
+                    CommandItemMod.MODID + ":" + getName(item), "inventory"));
 
-	}
+        }
+        itemsToRegister.clear();
+    }
 
-	@EventHandler
-	@Override
-	public void init(FMLInitializationEvent event) {
-		super.init(event);
-		register(commandSlate, CommandSlate.name);
-		register(commandRune, CommandRune.name);
-	}
+    @Override
+    public EntityPlayer getPlayerEntity(MessageContext ctx) {
+        return (ctx.side.isClient() ? Minecraft.getMinecraft().thePlayer
+                : super.getPlayerEntity(ctx));
+    }
 
-	@Override
-	public EntityPlayer getPlayerEntity(MessageContext ctx) {
-		return (ctx.side.isClient() ? Minecraft.getMinecraft().thePlayer
-				: super.getPlayerEntity(ctx));
-	}
-	
-	@Override
-	public IThreadListener getThread(MessageContext ctx) {
-		return Minecraft.getMinecraft();
-	}
+    @Override
+    public IThreadListener getThread(MessageContext ctx) {
+        return Minecraft.getMinecraft();
+    }
+
+    @Override
+    public void register(Item item) {
+        super.register(item);
+        itemsToRegister.add(item);
+    }
 }

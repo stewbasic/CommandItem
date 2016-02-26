@@ -98,6 +98,9 @@ public class MimicItem extends Item {
         }
     }
 
+    private final int reservedMeta;
+    private final Side side;
+
     // Forge extends ItemModelMesher to ItemModelMesherForge. Unfortunately
     // neither class offers a way to retrieve model location from item, so we
     // hack it apart with reflection >_>.
@@ -105,8 +108,6 @@ public class MimicItem extends Item {
     private String processedTag = null;
     private Map<MimicKey, Integer> keyToMeta = null;
     private int lastMeta;
-    private final int reservedMeta;
-    private final Side side;
 
     public MimicItem(int reservedMeta) {
         // Always reserve meta = 0.

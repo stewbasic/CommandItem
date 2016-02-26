@@ -25,24 +25,25 @@ public class GuiTextBox extends Gui {
         void onUpdate(int textBoxId, String textContents);
     }
 
-    private final int textBoxId;
-    public boolean allowFormatting = true, allowLineBreaks = true;
-
-    private static final int foreColor = 0xffa0a0a0, backColor = 0xff000000,
+    private final static int foreColor = 0xffa0a0a0, backColor = 0xff000000,
             cursorColor = 0xffd0d0d0, margin = 4;
+
+    private final int textBoxId;
     private final FontRenderer fontRenderer;
     protected final int xPosition, yPosition, width, height, lineHeight, maxLines,
             textY;
+    protected final int[] lineStart, lineEnd;
+
     private String text = "";
     private int maxStringLength = 65536;
     private int cursorCounter;
     private boolean isFocused;
+    private GuiTextBoxListener listener = null;
     // selectEndIndex is the index which moves; it need not be >
     // selectStartIndex.
     protected int lines, selectStartIndex, selectEndIndex, currentLine,
             currentLineStart;
-    protected final int[] lineStart, lineEnd;
-    private GuiTextBoxListener listener = null;
+    public boolean allowFormatting = true, allowLineBreaks = true;
 
     private static int min(int a, int b) {
         return a < b ? a : b;

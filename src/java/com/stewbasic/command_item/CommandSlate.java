@@ -13,31 +13,34 @@ import net.minecraftforge.common.util.Constants.NBT;
  * be obtained using /give. This is analogous to the command block.
  */
 class CommandSlate extends Item {
-	static final String name = "command_slate";
-	private static final String TAG = "config";
+    private final static String name = "command_slate";
+    private final static String TAG = "config";
 
-	public CommandSlate() {
-		super();
-		setMaxStackSize(64);
-		setUnlocalizedName(name);
-	}
+    final CommandRune commandRune;
 
-	@Override
-	public ItemStack onItemRightClick(ItemStack stack, World world,
-			EntityPlayer player) {
-		if (player instanceof EntityPlayerMP) {
-			player.openGui(CommandItemMod.instance, 0, world,
-					(int) player.posX, (int) player.posY, (int) player.posZ);
-		}
-		return stack;
-	}
+    public CommandSlate(CommandRune commandRune) {
+        super();
+        setMaxStackSize(64);
+        setUnlocalizedName(name);
+        this.commandRune = commandRune;
+    }
 
-	public NBTTagCompound getConfigNBT(ItemStack stack) {
-		return stack.getSubCompound(TAG, true);
-	}
+    @Override
+    public ItemStack onItemRightClick(ItemStack stack, World world,
+                                      EntityPlayer player) {
+        if (player instanceof EntityPlayerMP) {
+            CommandItemMod.proxy.openGui(player, CommonProxy.GuiType.SLATE_GUI, world,
+                    (int) player.posX, (int) player.posY, (int) player.posZ);
+        }
+        return stack;
+    }
 
-	public boolean hasConfigNBT(ItemStack stack) {
-		NBTTagCompound nbt = stack.getTagCompound();
-		return (nbt != null) && nbt.hasKey(TAG, NBT.TAG_COMPOUND);
-	}
+    public NBTTagCompound getConfigNBT(ItemStack stack) {
+        return stack.getSubCompound(TAG, true);
+    }
+
+    public boolean hasConfigNBT(ItemStack stack) {
+        NBTTagCompound nbt = stack.getTagCompound();
+        return (nbt != null) && nbt.hasKey(TAG, NBT.TAG_COMPOUND);
+    }
 }

@@ -6,8 +6,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
 public class GuiButtonToggle extends GuiButton {
-    private boolean state = false;
     private final String textTrue, textFalse;
+
+    private boolean state = false;
 
     public GuiButtonToggle(int buttonId, int x, int y, int width, int height,
                            String textFalse, String textTrue) {
