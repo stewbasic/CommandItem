@@ -20,7 +20,7 @@ public class CommandItemMod {
     // Must be kept in sync with mcmod.info
     public final static String MODID = "command_item";
     // Must be kept in sync with build.gradle
-    public final static String MODVERSION = "0.1";
+    public final static String MODVERSION = "v0.8-mc1.8";
     // Hopefully javac will cull any unreachable code when this is false.
     public final static boolean DEBUG = false;
 
